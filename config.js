@@ -164,7 +164,81 @@ window.SITE = {
   },
 
 
-  /* ---------- 10. The final surprise (gift box) ---------- */
+  /* ---------- 10. "How well do you know us?" quiz ---------- */
+  // ✍️ These are examples: change the questions and answers to real ones about you two.
+  // "answer" is the position of the right option: 0 = first, 1 = second, 2 = third, 3 = fourth.
+  quiz: {
+    questions: [
+      { question: "Where did we go on our first date?",
+        options: ["A coffee shop", "The beach", "The movies", "A long drive"], answer: 0 },
+      { question: "What do I love most about you?",
+        options: ["Your smile", "Your laugh", "Your kindness", "Everything. Obviously."], answer: 3 },
+      { question: "Who fell in love first?",
+        options: ["You", "Me", "Same moment", "Still debating"], answer: 1 },
+      { question: "What's my idea of a perfect evening?",
+        options: ["A big party", "Gaming all night", "A quiet dinner with you", "Working late"], answer: 2 },
+      { question: "How much do I love you?",
+        options: ["A little", "A lot", "More than food", "More than all the stars"], answer: 3 },
+    ],
+    right: ["Correct! You know me so well ❤", "Yes! 😍", "Of course you knew that.", "Right again, clever girl."],
+    wrong: ["Nope! But I still love you 😄", "Not quite, love.", "Hmm… we need more dates to revise 😉"],
+    results: {
+      perfect: "Perfect score! You know us by heart. ❤",
+      good: "So close! You clearly pay attention to us. 😍",
+      low: "Ha! Looks like we need a lot more dates to study. 😉",
+    },
+  },
+
+
+  /* ---------- 11. Love coupons ---------- */
+  // She taps "Redeem" and gets a stamp. Her phone remembers which ones she has used.
+  coupons: [
+    { title: "One Endless Hug", text: "Valid anytime, anywhere. No time limit." },
+    { title: "Breakfast in Bed", text: "Made by me, served with a kiss." },
+    { title: "Movie Night", text: "You pick the movie. I won't complain. Promise." },
+    { title: "A Day of Yes", text: "For one whole day, I say yes to everything you ask." },
+    { title: "Win Any Argument", text: "Use it wisely. You are automatically right." },
+    { title: "Surprise Date", text: "I plan everything. You just show up looking beautiful." },
+  ],
+
+
+  /* ---------- 12. "Open when…" letters ---------- */
+  // ✍️ Little letters for different moments. Rewrite them in your own words.
+  openWhen: [
+    { when: "you miss me",
+      message: [
+        "Close your eyes for a second and remember the last time I hugged you. I'm still holding on, even from here.",
+        "You're the first thing on my mind every morning and the last thing every night. Now call me. I promise I'm already smiling.",
+      ] },
+    { when: "you can't sleep",
+      message: [
+        "Hey, sleepyhead. Breathe in slowly… and out. Imagine me next to you, playing with your hair and telling you about my boring day until your eyes get heavy.",
+        "Tomorrow is a new day, and I'll be right there in it. Goodnight, my love.",
+      ] },
+    { when: "you've had a bad day",
+      message: [
+        "I'm sorry today was hard. You don't have to be strong right now. Come here, let me hold you for a while.",
+        "Whatever happened, it doesn't change how amazing you are. Tomorrow your favourite food is on me, no arguments.",
+      ] },
+    { when: "you need a laugh",
+      message: [
+        "Remember the time we laughed so hard we couldn't breathe? You know the one. I still laugh about it at random moments.",
+        "Also, a reminder: I once tried very hard to impress you, failed completely, and you stayed anyway. Now go smile. You look prettiest when you do.",
+      ] },
+    { when: "you doubt yourself",
+      message: [
+        "Listen to me: you are smart, brave, kind and so much stronger than you think. I've watched you handle things that would break most people.",
+        "Whatever you're facing, you've got this. And on the days you don't, you've got me.",
+      ] },
+    { when: "you want to know how much I love you",
+      message: [
+        "More than yesterday and less than tomorrow. More than all the stars you can count.",
+        "If you ever forget, open this again. The answer will always be the same: endlessly.",
+      ] },
+  ],
+
+
+  /* ---------- 13. The final surprise (gift box) ---------- */
   // Reveal her real present, a date plan, a trip... anything.
   surprise: {
     teaser: "One more thing…",

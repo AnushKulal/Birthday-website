@@ -82,71 +82,70 @@
       });
     }
   } catch (e) { heartShape = null; }
-  var COLORS = ['#F8C8DC', '#B03A5B', '#E9D28A', '#C9557A', '#FFFFFF'];
+  var COLORS = ['#FF7EB3', '#E0457B', '#F8C8DC', '#C59CF5', '#F1D78A'];
 
+  // a small, soft puff of hearts (for little moments)
   function burst(opts) {
     if (!window.confetti || REDUCED) return;
     var o = Object.assign({
-      particleCount: 90, spread: 80, startVelocity: 40, origin: { y: 0.6 },
-      colors: COLORS, scalar: 1.1, zIndex: 80
+      particleCount: 26, spread: 70, startVelocity: 22, gravity: 0.6, decay: 0.92, ticks: 260,
+      origin: { y: 0.6 }, colors: COLORS, scalar: 1.25, zIndex: 80
     }, opts || {});
-    if (heartShape) o.shapes = [heartShape, 'circle'];
+    if (heartShape) o.shapes = [heartShape];
     try { confetti(o); } catch (e) { /* ignore */ }
   }
 
+  // hearts drifting slowly down from the top of the screen (for the big moments)
   function celebrate(duration) {
     if (!window.confetti || REDUCED) return;
     var end = Date.now() + (duration || 2600);
-    (function frame() {
-      burst({ particleCount: 4, angle: 60, spread: 60, startVelocity: 55, origin: { x: 0, y: 0.75 } });
-      burst({ particleCount: 4, angle: 120, spread: 60, startVelocity: 55, origin: { x: 1, y: 0.75 } });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    })();
-    setTimeout(function () { burst({ particleCount: 140, spread: 110, origin: { y: 0.45 } }); }, 400);
+    var t = setInterval(function () {
+      if (Date.now() > end) { clearInterval(t); return; }
+      burst({
+        particleCount: 2, angle: 270, spread: 60, startVelocity: 5, gravity: 0.5, decay: 0.95,
+        drift: (Math.random() - 0.5) * 0.8, ticks: 480, scalar: 1.4,
+        origin: { x: Math.random(), y: -0.06 }
+      });
+    }, 110);
   }
 
-  /* ---------- floating hearts ---------- */
-  function startHearts() {
+  /* ---------- rose petals drifting down ---------- */
+  function startPetals() {
     if (REDUCED) return;
     var box = $('#hearts');
-    var shades = ['#F8C8DC', '#F4A6C1', '#E07A9E', '#C9557A', '#E9D28A'];
+    var shades = [['#FFD1E3', '#F48FB1'], ['#FBC2EB', '#E0457B'], ['#FFE3EC', '#F7A1C4'], ['#F3E6FF', '#C59CF5'], ['#FFE6D5', '#FF9EAA']];
     function spawn() {
-      if (document.hidden || box.childElementCount > 16) return;
-      var h = el('span', 'float-heart');
-      var size = 10 + Math.random() * 20;
-      h.style.left = (Math.random() * 100) + 'vw';
-      h.style.setProperty('--s', size + 'px');
-      h.style.setProperty('--c', shades[Math.floor(Math.random() * shades.length)]);
-      h.style.setProperty('--o', (0.25 + Math.random() * 0.4).toFixed(2));
-      h.style.setProperty('--d', (9 + Math.random() * 8).toFixed(1) + 's');
-      h.style.setProperty('--x', ((Math.random() - 0.5) * 120).toFixed(0) + 'px');
-      h.style.setProperty('--r', ((Math.random() - 0.5) * 60).toFixed(0) + 'deg');
-      h.addEventListener('animationend', function () { h.remove(); });
-      box.appendChild(h);
+      if (document.hidden || box.childElementCount > 9) return;
+      var p = el('span', 'petal');
+      var c = shades[Math.floor(Math.random() * shades.length)];
+      p.style.left = (Math.random() * 96) + 'vw';
+      p.style.setProperty('--s', (11 + Math.random() * 9).toFixed(0) + 'px');
+      p.style.setProperty('--c1', c[0]);
+      p.style.setProperty('--c2', c[1]);
+      p.style.setProperty('--o', (0.55 + Math.random() * 0.3).toFixed(2));
+      p.style.setProperty('--d', (14 + Math.random() * 8).toFixed(1) + 's');
+      p.style.setProperty('--x', ((Math.random() - 0.5) * 140).toFixed(0) + 'px');
+      p.style.setProperty('--r', (80 + Math.random() * 120).toFixed(0) + 'deg');
+      p.addEventListener('animationend', function () { p.remove(); });
+      box.appendChild(p);
     }
-    for (var i = 0; i < 5; i++) setTimeout(spawn, i * 400);
-    setInterval(spawn, 900);
+    for (var i = 0; i < 3; i++) setTimeout(spawn, i * 1200);
+    setInterval(spawn, 1700);
   }
 
-  /* ---------- hearts that pop wherever she taps ---------- */
+  /* ---------- a single heart floats up wherever she taps ---------- */
   function startTapHearts() {
     if (REDUCED) return;
-    var shades = ['#FF7EB3', '#E0457B', '#9B5DE5', '#C59CF5', '#F1D78A', '#FF9A9E'];
+    var shades = ['#FF7EB3', '#E0457B', '#C59CF5', '#F48FB1'];
     document.addEventListener('pointerdown', function (e) {
       if (!document.body.classList.contains('unlocked')) return;
-      for (var i = 0; i < 7; i++) {
-        var h = el('span', 'tap-heart');
-        var angle = (Math.PI * 2 * i) / 7 + Math.random() * 0.6;
-        var dist = 40 + Math.random() * 45;
-        h.style.left = e.clientX + 'px';
-        h.style.top = e.clientY + 'px';
-        h.style.setProperty('--c', shades[i % shades.length]);
-        h.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(0) + 'px');
-        h.style.setProperty('--dy', (Math.sin(angle) * dist - 20).toFixed(0) + 'px');
-        h.style.setProperty('--rot', ((Math.random() - 0.5) * 90).toFixed(0) + 'deg');
-        h.addEventListener('animationend', function () { this.remove(); });
-        document.body.appendChild(h);
-      }
+      if (e.target.closest && e.target.closest('button, a, input, .lightbox, .ow-modal')) return;
+      var h = el('span', 'tap-heart');
+      h.style.left = e.clientX + 'px';
+      h.style.top = e.clientY + 'px';
+      h.style.setProperty('--c', shades[Math.floor(Math.random() * shades.length)]);
+      h.addEventListener('animationend', function () { h.remove(); });
+      document.body.appendChild(h);
     }, { passive: true });
   }
 
@@ -176,8 +175,8 @@
       s.style.left = (4 + Math.random() * 92) + '%';
       s.style.top = (6 + Math.random() * 84) + '%';
       s.style.setProperty('--s', (8 + Math.random() * 14).toFixed(0) + 'px');
-      s.style.setProperty('--d', (2.2 + Math.random() * 2.4).toFixed(1) + 's');
-      s.style.setProperty('--delay', (Math.random() * 3).toFixed(1) + 's');
+      s.style.setProperty('--d', (3.5 + Math.random() * 3).toFixed(1) + 's');
+      s.style.setProperty('--delay', (Math.random() * 4).toFixed(1) + 's');
       box.appendChild(s);
     }
     container.appendChild(box);
@@ -236,7 +235,7 @@
       var badge = el('div', 'preview-badge', 'Preview mode · countdown skipped');
       document.body.appendChild(badge);
     }
-    startHearts();   // hearts float over the countdown/lock screen too
+    startPetals();   // petals drift over the countdown/lock screen too
     var bday = parseLocal(cfg.birthday);
     if (!PREVIEW && bday && Date.now() < bday.getTime()) runCountdown(bday);
     else showGate();
@@ -366,7 +365,7 @@
     } else {
       $('.hero-ring').remove();
     }
-    addSparkles($('#hero'), 14);
+    addSparkles($('#hero'), 7);
     $('#footer-title').textContent = 'Happy Birthday, ' + name;
     $('#footer-name').textContent = cfg.yourName || 'me';
   }
@@ -750,6 +749,186 @@
     });
   }
 
+  /* ---------- small helpers for things her phone remembers ---------- */
+  function readList(key) {
+    try { var v = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  }
+  function saveList(key, arr) {
+    if (PREVIEW) return;   // previews don't leave traces on the owner's phone
+    try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) { /* storage blocked */ }
+  }
+  function burstAt(elm, opts) {
+    var r = elm.getBoundingClientRect();
+    burst(Object.assign({ particleCount: 14, spread: 55, startVelocity: 14,
+      origin: { x: (r.left + r.width / 2) / innerWidth, y: Math.max(0, r.top) / innerHeight } }, opts || {}));
+  }
+
+  /* ---------- "how well do you know us?" quiz ---------- */
+  function buildQuiz() {
+    var Q = cfg.quiz || {};
+    var qs = (Q.questions || []).filter(function (q) { return q && q.question && q.options && q.options.length; });
+    if (!qs.length) { $('#quiz').remove(); return; }
+    var dots = $('#quiz-dots'), count = $('#quiz-count'), qEl = $('#quiz-q'), opts = $('#quiz-options'),
+        note = $('#quiz-note'), next = $('#quiz-next'), stage = $('#quiz-stage'), result = $('#quiz-result');
+    var i = 0, score = 0;
+    function pick(arr, fallback) { return arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : fallback; }
+
+    function drawDots() {
+      dots.textContent = '';
+      qs.forEach(function (_, k) { dots.appendChild(el('span', k < i ? 'done' : (k === i ? 'now' : ''))); });
+    }
+    function show() {
+      var q = qs[i];
+      drawDots();
+      count.textContent = 'Question ' + (i + 1) + ' of ' + qs.length;
+      qEl.textContent = q.question;
+      note.textContent = '';
+      next.hidden = true;
+      opts.textContent = '';
+      q.options.forEach(function (text, k) {
+        var b = el('button', 'quiz-opt', text);
+        b.type = 'button';
+        b.addEventListener('click', function () { answer(k, b); });
+        opts.appendChild(b);
+      });
+      stage.classList.remove('fade-in'); void stage.offsetWidth; stage.classList.add('fade-in');
+    }
+    function answer(k, btn) {
+      var q = qs[i], buttons = opts.querySelectorAll('.quiz-opt');
+      buttons.forEach(function (b) { b.disabled = true; });
+      if (k === q.answer) {
+        score++;
+        btn.classList.add('right');
+        note.textContent = pick(Q.right, 'Correct! ❤');
+        burstAt(btn);
+      } else {
+        btn.classList.add('wrong');
+        if (buttons[q.answer]) buttons[q.answer].classList.add('right');
+        note.textContent = pick(Q.wrong, 'Not quite!');
+      }
+      next.textContent = i < qs.length - 1 ? 'Next question →' : 'See my score ❤';
+      next.hidden = false;
+    }
+    next.addEventListener('click', function () {
+      i++;
+      if (i < qs.length) { show(); return; }
+      drawDots();
+      stage.hidden = true;
+      result.hidden = false;
+      var R = Q.results || {};
+      $('#quiz-score').textContent = score + ' / ' + qs.length;
+      $('#quiz-result-msg').textContent = score === qs.length ? (R.perfect || 'Perfect score!')
+        : score >= Math.ceil(qs.length / 2) ? (R.good || 'So close!') : (R.low || 'We need more dates to study!');
+      if (score === qs.length) celebrate(1800); else burstAt($('#quiz-score'));
+    });
+    $('#quiz-again').addEventListener('click', function () {
+      i = 0; score = 0;
+      result.hidden = true;
+      stage.hidden = false;
+      show();
+    });
+    show();
+  }
+
+  /* ---------- love coupons ---------- */
+  function buildCoupons() {
+    var list = cfg.coupons || [];
+    if (!list.length) { $('#coupons').remove(); return; }
+    $('#coupons-sub').textContent = 'Yours to use whenever you like. Tap one to redeem it, then show it to ' + (cfg.yourName || 'me') + '.';
+    var used = readList('bday-coupons');
+    var grid = $('#coupons-grid');
+    list.forEach(function (c, k) {
+      var wrap = el('div', 'coupon-wrap reveal');
+      var card = el('article', 'coupon');
+      var main = el('div', 'coupon-main');
+      main.appendChild(el('p', 'coupon-label', 'Love coupon · ' + String(k + 1).padStart(2, '0')));
+      main.appendChild(el('h3', 'coupon-title', c.title || 'A little something'));
+      if (c.text) main.appendChild(el('p', 'coupon-text', c.text));
+      var stub = el('div', 'coupon-stub');
+      var btn = el('button', 'coupon-btn', 'Redeem');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Redeem: ' + (c.title || 'coupon'));
+      stub.appendChild(btn);
+      var stamp = el('span', 'coupon-stamp', 'Redeemed ❤');
+      stamp.setAttribute('aria-hidden', 'true');
+      card.appendChild(main);
+      card.appendChild(stub);
+      card.appendChild(stamp);
+      wrap.appendChild(card);
+      grid.appendChild(wrap);
+
+      function markUsed(animate) {
+        card.classList.add('redeemed');
+        if (animate) card.classList.add('just-redeemed');
+        btn.textContent = 'Used ✓';
+        btn.disabled = true;
+        btn.setAttribute('aria-label', (c.title || 'Coupon') + ' redeemed');
+      }
+      if (used.indexOf(k) !== -1) markUsed(false);
+      btn.addEventListener('click', function () {
+        markUsed(true);
+        if (used.indexOf(k) === -1) used.push(k);
+        saveList('bday-coupons', used);
+        burstAt(card);
+      });
+    });
+  }
+
+  /* ---------- "open when…" letters ---------- */
+  function buildOpenWhen() {
+    var list = cfg.openWhen || [];
+    if (!list.length) { $('#open-when').remove(); return; }
+    var grid = $('#ow-grid'), modal = $('#ow-modal'), body = $('#ow-body'), title = $('#ow-modal-title');
+    var opened = readList('bday-open-when');
+    var lastBtn = null;
+    $('#ow-sign').textContent = 'Always yours, ' + (cfg.yourName || 'me');
+
+    list.forEach(function (item, k) {
+      var b = el('button', 'ow-card reveal');
+      b.type = 'button';
+      var env = el('span', 'ow-env');
+      env.setAttribute('aria-hidden', 'true');
+      env.appendChild(el('span', 'ow-flap'));
+      env.appendChild(el('span', 'ow-seal', '❤'));
+      var label = el('span', 'ow-label');
+      label.appendChild(el('small', null, 'Open when'));
+      label.appendChild(el('span', 'ow-what', item.when));
+      b.appendChild(env);
+      b.appendChild(label);
+      b.appendChild(el('span', 'ow-state', 'opened'));
+      if (opened.indexOf(k) !== -1) b.classList.add('opened');
+      b.addEventListener('click', function () { openLetter(k, b); });
+      grid.appendChild(b);
+    });
+
+    function openLetter(k, btn) {
+      var item = list[k];
+      lastBtn = btn;
+      title.textContent = item.when;
+      body.textContent = '';
+      [].concat(item.message || []).forEach(function (p) { body.appendChild(el('p', null, p)); });
+      modal.hidden = false;
+      modal.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+      try { $('#ow-close').focus({ preventScroll: true }); } catch (e) { $('#ow-close').focus(); }
+      if (!btn.classList.contains('opened')) {
+        btn.classList.add('opened');
+        opened.push(k);
+        saveList('bday-open-when', opened);
+      }
+    }
+    function closeLetter() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      if (lastBtn) { try { lastBtn.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+    }
+    $('#ow-close').addEventListener('click', closeLetter);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeLetter(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLetter(); });
+  }
+
   /* ---------- scroll reveal ---------- */
   function setupReveal() {
     var items = document.querySelectorAll('.reveal');
@@ -771,7 +950,10 @@
   buildStory();
   buildGallery();
   buildReasons();
+  buildQuiz();
   buildWish();
+  buildCoupons();
+  buildOpenWhen();
   buildLetter();
   buildSurprise();
   setupReveal();

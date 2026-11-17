@@ -18,12 +18,21 @@
   <!-- Animated gradient glows + floating hearts in the background -->
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
   <div id="hearts" aria-hidden="true"></div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="g-heart" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FF7EB3"/>
+        <stop offset=".55" stop-color="#E0457B"/>
+        <stop offset="1" stop-color="#9B5DE5"/>
+      </linearGradient>
+    </defs>
+  </svg>
   <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
   <!-- ============ COUNTDOWN (shown before her birthday) ============ -->
   <section id="countdown" class="overlay" hidden>
     <div class="overlay-card">
-      <div class="big-heart" aria-hidden="true"></div>
+      <svg class="heart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="100" d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 3.9 1 6 3.1 2.1-2.1 3.8-3.3 6-3.1 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg>
       <p class="script kicker">Patience, my love…</p>
       <h1 class="overlay-title">Something special is waiting for you</h1>
       <div class="timer" role="timer" aria-live="off">
@@ -40,7 +49,7 @@
   <!-- ============ LOCK SCREEN ============ -->
   <section id="gate" class="overlay" hidden>
     <form class="overlay-card" id="gate-form" novalidate>
-      <div class="big-heart" aria-hidden="true"></div>
+      <svg class="heart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="100" d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 3.9 1 6 3.1 2.1-2.1 3.8-3.3 6-3.1 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg>
       <p class="script kicker" id="gate-kicker">For your eyes only</p>
       <h1 class="overlay-title" id="gate-title">Answer this to open your surprise</h1>
       <div id="gate-quiz">
@@ -62,7 +71,7 @@
         <span class="script" id="hero-greeting">Happy Birthday</span>
         <span class="hero-name" id="hero-name"></span>
       </h1>
-      <div class="divider" aria-hidden="true"><span>❦</span></div>
+      <div class="divider divider-heart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path pathLength="100" d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 3.9 1 6 3.1 2.1-2.1 3.8-3.3 6-3.1 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg></div>
       <p class="hero-msg" id="hero-msg"></p>
       <a href="#story" class="scroll-cue">
         <span>Scroll down, my love</span>
@@ -138,11 +147,38 @@
       </div>
     </section>
 
+    <!-- ============ QUIZ ============ -->
+    <section id="quiz" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter four</p>
+          <h2>How Well Do You Know Us?</h2>
+          <p class="sub">A tiny quiz about us. No pressure… okay, a little pressure.</p>
+        </header>
+
+        <div class="quiz-card reveal" id="quiz-card">
+          <div class="quiz-dots" id="quiz-dots" aria-hidden="true"></div>
+          <div class="quiz-stage" id="quiz-stage">
+            <p class="quiz-count" id="quiz-count"></p>
+            <h3 class="quiz-q" id="quiz-q"></h3>
+            <div class="quiz-options" id="quiz-options"></div>
+            <p class="quiz-note" id="quiz-note" role="status" aria-live="polite"></p>
+            <button type="button" class="btn quiz-next" id="quiz-next" hidden>Next question →</button>
+          </div>
+          <div class="quiz-result" id="quiz-result" hidden>
+            <p class="quiz-score" id="quiz-score"></p>
+            <p class="quiz-result-msg" id="quiz-result-msg"></p>
+            <button type="button" class="link-btn" id="quiz-again">Play again ↺</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ MAKE A WISH ============ -->
     <section id="wish" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter four</p>
+          <p class="script kicker">Chapter five</p>
           <h2>Make a Wish</h2>
           <p class="sub">Close your eyes, make a wish, then blow out the candles.</p>
         </header>
@@ -165,11 +201,35 @@
       </div>
     </section>
 
+    <!-- ============ LOVE COUPONS ============ -->
+    <section id="coupons" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter six</p>
+          <h2>Love Coupons</h2>
+          <p class="sub" id="coupons-sub">Yours to use whenever you like. Tap one to redeem it.</p>
+        </header>
+        <div class="coupons" id="coupons-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ OPEN WHEN… ============ -->
+    <section id="open-when" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter seven</p>
+          <h2>Open When…</h2>
+          <p class="sub">Little letters for the days you need them. Maybe save a few for later.</p>
+        </header>
+        <div class="ow-grid" id="ow-grid"></div>
+      </div>
+    </section>
+
     <!-- ============ LOVE LETTER ============ -->
     <section id="letter" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter five</p>
+          <p class="script kicker">Chapter eight</p>
           <h2>A Letter for You</h2>
           <p class="sub">Some things are better said slowly.</p>
         </header>
@@ -227,7 +287,7 @@
     <!-- ============ FOOTER ============ -->
     <footer class="footer">
       <p class="script footer-title" id="footer-title"></p>
-      <div class="divider" aria-hidden="true"><span>❦</span></div>
+      <div class="divider divider-heart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path pathLength="100" d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 3.9 1 6 3.1 2.1-2.1 3.8-3.3 6-3.1 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg></div>
       <p class="muted">Made with all my love, by <span id="footer-name"></span></p>
       <a href="#hero" class="link-btn">↑ Back to the beginning</a>
     </footer>
@@ -239,6 +299,16 @@
   </button>
   <div class="now-playing" id="now-playing" aria-hidden="true"></div>
   <audio id="music" loop preload="none"></audio>
+
+  <!-- "Open when" letter viewer -->
+  <div class="ow-modal" id="ow-modal" role="dialog" aria-modal="true" aria-labelledby="ow-modal-title" hidden>
+    <article class="ow-letter" id="ow-letter">
+      <button class="ow-close" id="ow-close" type="button" aria-label="Close the letter">✕</button>
+      <p class="ow-when"><span>Open when</span> <span class="script" id="ow-modal-title"></span></p>
+      <div class="ow-body" id="ow-body"></div>
+      <p class="ow-sign script" id="ow-sign"></p>
+    </article>
+  </div>
 
   <!-- Photo viewer -->
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
