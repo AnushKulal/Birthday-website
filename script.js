@@ -510,7 +510,27 @@
         count.textContent = (i + 1) + ' of ' + reasons.length;
         bar.style.width = ((i + 1) / reasons.length * 100) + '%';
       }
+      fitReason();
     }
+
+    // Shrink the text until it fits on the card (long reasons, small or landscape screens).
+    // Uses offsetTop/offsetHeight, which ignore the flip/toss animations.
+    function fitReason() {
+      text.style.fontSize = '';
+      var size = parseFloat(getComputedStyle(text).fontSize);
+      for (var g = 0; g < 60 && size > 9; g++) {
+        var fits = label.offsetTop >= 0 &&
+                   text.offsetTop + text.offsetHeight <= hint.offsetTop - 4;
+        if (fits) break;
+        size -= 0.5;
+        text.style.fontSize = size + 'px';
+      }
+    }
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () { if (i >= 0) fitReason(); }, 120);
+    });
 
     count.textContent = reasons.length + ' reasons, and that’s just the start';
 

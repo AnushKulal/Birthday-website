@@ -47,7 +47,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* text scales gently from phones (16px) up to big monitors (20px) */
+html { font-size: clamp(100%, 0.25vw + 0.8rem, 125%); scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
@@ -59,6 +60,7 @@ body {
   color: var(--ink);
   background: #FDE3EE;
   overflow-x: hidden;
+  overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -319,11 +321,10 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px;
+  display: flex;               /* card is centred with margin:auto, so tall cards still scroll from the top */
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: linear-gradient(-45deg, #FF9A9E, #FBC2EB, #D6B4FC, #FECFEF, #FFC3A0, #FF9EC4);
   background-size: 400% 400%;
   animation: flow 14s ease infinite;
@@ -334,7 +335,9 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
 .overlay-card {
   position: relative;
   z-index: 1;
-  width: min(430px, 100%);
+  margin: auto;
+  container-type: inline-size;
+  width: min(27rem, 100%);
   padding: 38px 26px 30px;
   text-align: center;
   background:
@@ -349,20 +352,42 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
 .overlay-card .kicker { font-size: 1.6rem; margin: 4px 0 0; display: inline-block; }
 .overlay-title { font-size: clamp(1.45rem, 6vw, 1.9rem); margin: 4px 0 22px; }
 
+/* short screens (phones in landscape): compact card so everything fits */
+@media (max-height: 560px) {
+  .overlay { padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .overlay-card { width: min(34rem, 100%); padding: 16px 22px 14px; border-radius: 22px; }
+  .overlay .big-heart { width: 38px; height: 38px; margin-bottom: 0; }
+  .overlay-card .kicker { font-size: 1.25rem; }
+  .overlay-title { font-size: 1.25rem; margin: 0 0 10px; }
+  .overlay .timer { margin-bottom: 8px; }
+  .overlay .timer > div { padding: 6px 2px 5px; }
+  .overlay .muted { margin: 4px 0; line-height: 1.4; }
+  .gate-question { font-size: 1rem; margin-bottom: 8px; }
+  #gate-answer { height: 44px; margin-bottom: 10px; }
+  .overlay .btn { min-height: 44px; }
+  .gate-msg { margin-top: 6px; min-height: 1.4em; }
+}
+
 .skip-btn { margin-top: 6px; min-height: 44px; padding: 8px 24px; font-size: .92rem; }
 .overlay.leaving .big-heart { animation: heart-burst .9s ease forwards; }
 @keyframes heart-burst { to { transform: scale(14); opacity: 0; } }
 
 /* timer boxes (countdown + days together) */
+/* number boxes size themselves to the card they sit in (container query units) */
 .timer {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+  gap: clamp(6px, 2.6cqi, 10px);
   margin: 0 auto 20px;
-  max-width: 360px;
+  max-width: 22.5rem;
+}
+@container (max-width: 250px) {
+  .timer { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 15rem; }
 }
 .timer > div {
-  padding: 12px 4px 10px;
+  min-width: 0;
+  padding: 12px 2px 10px;
   background: linear-gradient(#fff, #fff) padding-box, var(--grad-border) border-box;
   border-radius: 16px;
   box-shadow: 0 8px 18px rgba(176, 58, 91, .1);
@@ -371,15 +396,25 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
   align-items: center;
 }
 .timer span {
+  max-width: 100%;
   font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 7vw, 2.1rem);
+  font-size: clamp(1.2rem, 6vw, 2.1rem);
+  font-size: clamp(1.1rem, 7cqi, 2.1rem);
   font-weight: 700;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@container (max-width: 250px) {
+  .timer span { font-size: 1.5rem; }
 }
 .timer small {
-  font-size: .66rem;
-  letter-spacing: .14em;
+  max-width: 100%;
+  font-size: .6rem;
+  font-size: clamp(.5rem, 2.7cqi, .66rem);
+  letter-spacing: .1em;
+  letter-spacing: clamp(.02em, .45cqi, .14em);
+  white-space: nowrap;
   text-transform: uppercase;
   color: var(--muted);
   margin-top: 4px;
@@ -428,7 +463,7 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
 /* preview badge */
 .preview-badge {
   position: fixed;
-  left: 16px;
+  left: max(16px, env(safe-area-inset-left));
   bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 60;
   padding: 4px 14px;
@@ -444,8 +479,11 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
 /* =====================================================================
    Layout + section headings
    ===================================================================== */
-.container { max-width: 1000px; margin: 0 auto; }
-.chapter { padding: 90px 16px; }
+.container { max-width: 64rem; margin: 0 auto; }
+.chapter {
+  padding: clamp(56px, 11vh, 110px) max(16px, env(safe-area-inset-right)) clamp(56px, 11vh, 110px) max(16px, env(safe-area-inset-left));
+  padding-block: clamp(56px, 11svh, 110px);
+}
 .section-head { text-align: center; margin: 0 auto 46px; }
 .section-head .kicker { font-size: 1.7rem; margin: 0; display: inline-block; }
 .section-head h2 { font-size: clamp(2.2rem, 8vw, 3.3rem); margin: 0; font-weight: 700; }
@@ -510,15 +548,18 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 70px 16px 110px;
+  padding: clamp(40px, 9vh, 70px) max(16px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  padding-top: clamp(40px, 9svh, 70px);
   position: relative;
 }
 .hero > :not(.sparkles) { position: relative; z-index: 1; }
 .hero-ring {
   position: relative;
-  width: clamp(156px, 44vw, 220px);
+  /* sized by width AND height, so it fits phones in landscape too */
+  width: clamp(110px, min(44vw, 30vh), 13.75rem);
+  width: clamp(110px, min(44vw, 30svh), 13.75rem);
   aspect-ratio: 1;
-  margin-bottom: 30px;
+  margin-bottom: clamp(16px, 4svh, 30px);
   padding: 6px;
   border-radius: 50%;
   isolation: isolate;
@@ -541,25 +582,29 @@ body.locked #hearts { z-index: 55; }       /* float over the lock screen too */
 }
 .hero-title { margin: 0; display: flex; flex-direction: column; align-items: center; }
 .hero-title .script {
-  font-size: clamp(3.2rem, 15vw, 6.8rem);
+  font-size: clamp(2.6rem, min(15vw, 17vh), 6.8rem);
+  font-size: clamp(2.6rem, min(15vw, 17svh), 6.8rem);
   line-height: 1.1;
   font-weight: 700;
   filter: drop-shadow(0 6px 18px rgba(224, 69, 123, .25));
 }
 .hero-name {
   font-family: var(--font-serif);
-  font-size: clamp(2.1rem, 9.5vw, 4rem);
+  font-size: clamp(1.8rem, min(9.5vw, 10vh), 4rem);
+  font-size: clamp(1.8rem, min(9.5vw, 10svh), 4rem);
   font-weight: 700;
   letter-spacing: .03em;
   margin-top: 2px;
 }
 .hero-msg { max-width: 38ch; margin: 0 auto; color: var(--muted); font-size: 1.02rem; }
 
+/* content sits in the middle, the scroll hint at the bottom, and they can never overlap
+   (auto margins share the free space instead of pinning the hint on top of the text) */
+.hero > :first-child { margin-top: auto; }
 .scroll-cue {
-  position: absolute !important;
-  bottom: max(26px, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: auto;
+  padding-top: clamp(18px, 5vh, 36px);
+  padding-top: clamp(18px, 5svh, 36px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -580,14 +625,13 @@ body.unlocked .hero > :nth-child(2) { animation-delay: .55s; }
 body.unlocked .hero > :nth-child(3) { animation-delay: .8s; }
 body.unlocked .hero > :nth-child(4) { animation-delay: 1s; }
 body.unlocked .hero > :nth-child(5) { animation-delay: 1.6s; }
-body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
-@keyframes rise-centered { from { opacity: 0; transform: translate(-50%, 26px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 /* =====================================================================
    Days together
    ===================================================================== */
 .together {
-  max-width: 460px;
+  container-type: inline-size;
+  max-width: 29rem;
   margin: 0 auto 64px;
   padding: 24px 18px 14px;
   text-align: center;
@@ -604,7 +648,7 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 /* =====================================================================
    Timeline
    ===================================================================== */
-.timeline { position: relative; max-width: 880px; margin: 0 auto; }
+.timeline { position: relative; max-width: 55rem; margin: 0 auto; }
 .timeline::before {
   content: "";
   position: absolute;
@@ -688,6 +732,11 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 14px; }
 @media (min-width: 700px) { .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 26px; } }
 @media (min-width: 1000px) { .gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 340px) {
+  .gallery { gap: 16px 10px; }
+  .polaroid { padding: 6px 6px 0; }
+  .polaroid .cap { font-size: 1rem; padding: 6px 2px 9px; }
+}
 
 .polaroid {
   display: block;
@@ -723,7 +772,7 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 12px;
+  padding: 64px max(12px, env(safe-area-inset-right)) 64px max(12px, env(safe-area-inset-left));
   background: linear-gradient(160deg, rgba(94, 42, 92, .96), rgba(122, 31, 61, .96) 55%, rgba(60, 25, 70, .96));
   animation: fade .3s ease;
 }
@@ -731,7 +780,8 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .lb-figure { margin: 0; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 .lb-figure img {
   max-width: min(92vw, 900px);
-  max-height: 74vh;
+  max-height: calc(100vh - 180px);
+  max-height: calc(100svh - 180px);
   object-fit: contain;
   border: 8px solid #fff;
   border-radius: 6px;
@@ -759,15 +809,37 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .lb-prev { left: 10px; top: 50%; transform: translateY(-50%); }
 .lb-next { right: 10px; top: 50%; transform: translateY(-50%); }
 
+/* narrow phones: arrows sit below the photo instead of covering it */
+@media (max-width: 640px) and (min-height: 501px) {
+  .lb-prev, .lb-next { top: auto; bottom: max(12px, env(safe-area-inset-bottom)); transform: none; }
+  .lb-prev { left: max(16px, env(safe-area-inset-left)); }
+  .lb-next { right: max(16px, env(safe-area-inset-right)); }
+  .lb-figure img { max-width: calc(100vw - 24px); }
+}
+/* short screens (landscape phones): arrows at the sides, photo uses the full height */
+@media (max-height: 500px) {
+  .lightbox { padding: 10px 68px; }
+  .lb-figure img { max-height: calc(100vh - 64px); max-height: calc(100svh - 64px); max-width: calc(100vw - 136px); border-width: 5px; }
+  .lb-figure figcaption { font-size: 1.1rem; margin-top: 2px; line-height: 1.3; }
+  .lb-close { top: 10px; right: max(12px, env(safe-area-inset-right)); }
+}
+
 /* =====================================================================
    Reasons deck
    ===================================================================== */
+/* the card is sized by width AND height (never taller than the screen);
+   everything inside scales with the card via container query units */
 .deck {
   position: relative;
-  width: min(340px, 100%);
+  width: min(21.25rem, calc(100% - 28px), 60vh);
+  width: min(21.25rem, calc(100% - 28px), 60svh);
   aspect-ratio: 4 / 5;
   margin: 0 auto;
   perspective: 1400px;
+  container-type: inline-size;
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .deck { aspect-ratio: 4 / 3; width: min(26rem, calc(100% - 28px), 96vh); width: min(26rem, calc(100% - 28px), 96svh); }
 }
 .deck-layer {
   position: absolute;
@@ -809,7 +881,9 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   align-items: center;
   justify-content: center;
   gap: 10px;
+  gap: clamp(4px, 3cqi, 10px);
   padding: 34px 28px;
+  padding: clamp(16px, 10cqi, 34px) clamp(14px, 8cqi, 28px);
   border-radius: 24px;
   text-align: center;
   -webkit-backface-visibility: hidden;
@@ -833,21 +907,25 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   pointer-events: none;
 }
 .rc-heart {
+  flex: none;
   width: 74px;
-  height: 74px;
+  width: clamp(36px, 22cqi, 74px);
+  height: auto;
+  aspect-ratio: 1;
   background: linear-gradient(135deg, #fff, #F9E59A);
   -webkit-mask: var(--heart) center / contain no-repeat;
           mask: var(--heart) center / contain no-repeat;
   animation: heartbeat 1.8s ease-in-out infinite;
 }
-.rc-front-title { font-family: var(--font-serif); font-size: 1.65rem; font-weight: 700; line-height: 1.2; }
-.rc-tap { font-family: var(--font-script); font-weight: 700; font-size: 1.35rem; color: #FFE7A3; }
+.rc-front-title { font-family: var(--font-serif); font-size: 1.65rem; font-size: clamp(1.05rem, 8cqi, 1.65rem); font-weight: 700; line-height: 1.2; }
+.rc-tap { font-family: var(--font-script); font-weight: 700; font-size: 1.35rem; font-size: clamp(.95rem, 6.4cqi, 1.35rem); color: #FFE7A3; }
 .rc-back {
   background: linear-gradient(160deg, #FFFFFF, #FFF0F6 60%, #F5ECFF) padding-box, linear-gradient(135deg, #FF7EB3, #C59CF5, #F1D78A) border-box;
   transform: rotateY(180deg);
 }
 .rc-label {
   font-size: .74rem;
+  font-size: clamp(.58rem, 3.5cqi, .74rem);
   font-weight: 600;
   letter-spacing: .22em;
   text-transform: uppercase;
@@ -857,11 +935,12 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .rc-text {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: clamp(1.25rem, 5.4vw, 1.5rem);
+  font-size: clamp(1.1rem, 5.4vw, 1.5rem);
+  font-size: clamp(.95rem, 7cqi, 1.5rem);   /* script.js shrinks it further if a long reason still doesn't fit */
   line-height: 1.5;
   color: #8E2450;
 }
-.rc-next { position: absolute; bottom: 22px; font-size: .8rem; color: var(--muted); }
+.rc-next { position: absolute; bottom: 22px; bottom: clamp(8px, 6.4cqi, 22px); font-size: .8rem; font-size: clamp(.62rem, 3.7cqi, .8rem); color: var(--muted); }
 
 .deck-progress {
   width: min(240px, 70%);
@@ -884,15 +963,25 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 /* =====================================================================
    Make a wish: cake
    ===================================================================== */
-.cake-stage { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
+/* --u is the cake's "pixel": 1px normally, smaller on narrow or short screens, a bit bigger on big monitors.
+   Every cake size is a multiple of it, so the whole cake scales as one piece. */
+.cake-stage {
+  --u: min(calc(1rem / 16), calc((100vw - 32px) / 330), calc(100vh / 400));
+  --u: min(calc(1rem / 16), calc((100vw - 32px) / 330), calc(100svh / 400));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: calc(40 * var(--u));
+}
 .cake-stage::before { /* warm candle glow */
   content: "";
   position: absolute;
-  top: -10px;
+  top: calc(-10 * var(--u));
   left: 50%;
-  width: 360px;
-  height: 320px;
-  margin-left: -180px;
+  translate: -50% 0;
+  width: min(calc(360 * var(--u)), 100vw - 48px);
+  height: calc(320 * var(--u));
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 214, 120, .55), rgba(255, 126, 179, .3) 45%, transparent 70%);
   animation: glow-pulse 3s ease-in-out infinite;
@@ -906,30 +995,31 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   display: flex;
   align-items: flex-end;
   justify-content: space-evenly;
-  width: 170px;
-  height: 60px;
-  margin-bottom: -4px;
+  width: calc(170 * var(--u));
+  height: calc(60 * var(--u));
+  margin-bottom: calc(-4 * var(--u));
 }
 .candle {
+  --stripe: #FF9EC4;
   position: relative;
-  width: 14px;
-  height: 52px;
+  width: calc(14 * var(--u));
+  height: calc(52 * var(--u));
   padding: 0;
   border: 0;
-  border-radius: 4px 4px 2px 2px;
-  background: repeating-linear-gradient(135deg, #fff 0 6px, #FF9EC4 6px 12px);
-  box-shadow: inset -3px 0 0 rgba(0, 0, 0, .06);
+  border-radius: calc(4 * var(--u)) calc(4 * var(--u)) calc(2 * var(--u)) calc(2 * var(--u));
+  background: repeating-linear-gradient(135deg, #fff 0 calc(6 * var(--u)), var(--stripe) calc(6 * var(--u)) calc(12 * var(--u)));
+  box-shadow: inset calc(-3 * var(--u)) 0 0 rgba(0, 0, 0, .06);
   cursor: pointer;
 }
-.candle:nth-child(even) { background: repeating-linear-gradient(135deg, #fff 0 6px, #C59CF5 6px 12px); }
-.candle:nth-child(odd) { height: 46px; }
+.candle:nth-child(even) { --stripe: #C59CF5; }
+.candle:nth-child(odd) { height: calc(46 * var(--u)); }
 .candle::before { /* wick */
   content: "";
   position: absolute;
   left: 50%;
-  top: -8px;
-  width: 2px;
-  height: 9px;
+  top: calc(-8 * var(--u));
+  width: max(1px, calc(2 * var(--u)));
+  height: calc(9 * var(--u));
   border-radius: 1px;
   background: #5b3a29;
   transform: translateX(-50%);
@@ -942,10 +1032,10 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .flame {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 5px);
-  width: 16px;
-  height: 27px;
-  margin-left: -8px;
+  bottom: calc(100% + 5 * var(--u));
+  width: calc(16 * var(--u));
+  height: calc(27 * var(--u));
+  margin-left: calc(-8 * var(--u));
   border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
   background: radial-gradient(ellipse at 50% 72%, #fff 0 14%, #ffe680 30%, #ffb43a 58%, rgba(255, 120, 40, 0) 76%);
   filter: drop-shadow(0 0 10px rgba(255, 190, 80, .95));
@@ -980,25 +1070,25 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   100% { opacity: 0; transform: translate(8px, -60px) scale(3.4); }
 }
 
-.tier { border-radius: 14px 14px 6px 6px; }
+.tier { border-radius: calc(14 * var(--u)) calc(14 * var(--u)) calc(6 * var(--u)) calc(6 * var(--u)); }
 .tier-top {
   z-index: 2;
-  width: 190px;
-  height: 74px;
+  width: calc(190 * var(--u));
+  height: calc(74 * var(--u));
   background: linear-gradient(180deg, #FF94BE 0%, #E0457B 100%);
-  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, .06), 0 8px 18px rgba(224, 69, 123, .25);
+  box-shadow: inset 0 calc(-8 * var(--u)) 0 rgba(0, 0, 0, .06), 0 8px 18px rgba(224, 69, 123, .25);
   --frost: #FFF6FA;
 }
 .tier-bottom {
   z-index: 1;
-  width: min(270px, 78vw);
-  height: 96px;
-  margin-top: -2px;
+  width: calc(270 * var(--u));
+  height: calc(96 * var(--u));
+  margin-top: calc(-2 * var(--u));
   background:
-    radial-gradient(circle, #F9E59A 2.4px, transparent 3px) 8px 40px / 34px 30px,
-    radial-gradient(circle, #FF7EB3 2.4px, transparent 3px) 25px 55px / 34px 30px,
+    radial-gradient(circle, #F9E59A calc(2.4 * var(--u)), transparent calc(3 * var(--u))) calc(8 * var(--u)) calc(40 * var(--u)) / calc(34 * var(--u)) calc(30 * var(--u)),
+    radial-gradient(circle, #FF7EB3 calc(2.4 * var(--u)), transparent calc(3 * var(--u))) calc(25 * var(--u)) calc(55 * var(--u)) / calc(34 * var(--u)) calc(30 * var(--u)),
     linear-gradient(180deg, #F3E6FF 0%, #E3C8FF 45%, #FBC2EB 100%);
-  box-shadow: inset 0 -10px 0 rgba(0, 0, 0, .05);
+  box-shadow: inset 0 calc(-10 * var(--u)) 0 rgba(0, 0, 0, .05);
   --frost: #fff;
 }
 .frosting {
@@ -1006,8 +1096,8 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   top: 0;
   left: 0;
   right: 0;
-  height: 18px;
-  border-radius: 14px 14px 0 0;
+  height: calc(18 * var(--u));
+  border-radius: calc(14 * var(--u)) calc(14 * var(--u)) 0 0;
   background: var(--frost);
 }
 .frosting::after { /* drips */
@@ -1016,13 +1106,13 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
   top: 100%;
   left: 0;
   right: 0;
-  height: 13px;
-  background: radial-gradient(circle at 50% 0, var(--frost) 9px, transparent 9.5px) 0 0 / 22px 13px repeat-x;
+  height: calc(13 * var(--u));
+  background: radial-gradient(circle at 50% 0, var(--frost) calc(9 * var(--u)), transparent calc(9.5 * var(--u))) 0 0 / calc(22 * var(--u)) calc(13 * var(--u)) repeat-x;
 }
 .plate {
-  width: min(320px, 90vw);
-  height: 20px;
-  margin-top: -6px;
+  width: calc(320 * var(--u));
+  height: calc(20 * var(--u));
+  margin-top: calc(-6 * var(--u));
   border-radius: 50%;
   background: linear-gradient(90deg, #F1D78A, #FFF6D8 50%, #E9C46A);
   box-shadow: 0 10px 24px rgba(155, 93, 229, .25);
@@ -1043,15 +1133,15 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 /* =====================================================================
    Love letter
    ===================================================================== */
-.envelope-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 70px; transition: opacity .6s ease; }
-.envelope-wrap::before { /* soft glow behind the envelope */
+.envelope-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: clamp(50px, 10svh, 70px); transition: opacity .6s ease; }
+.envelope-wrap::before { /* soft glow behind the envelope (never wider than the screen) */
   content: "";
   position: absolute;
   top: 40px;
   left: 50%;
-  width: 380px;
+  translate: -50% 0;
+  width: min(380px, 100vw - 48px);
   height: 300px;
-  margin-left: -190px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 126, 179, .45), rgba(155, 93, 229, .2) 50%, transparent 72%);
   animation: glow-pulse 3.2s ease-in-out infinite;
@@ -1060,7 +1150,7 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 .envelope-wrap.fading { opacity: 0; }
 .envelope {
   position: relative;
-  width: min(320px, 86vw);
+  width: min(20rem, 86vw);
   aspect-ratio: 16 / 10;
   padding: 0;
   border: 0;
@@ -1135,7 +1225,7 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 
 .letter-paper {
   position: relative;
-  max-width: 640px;
+  max-width: 40rem;
   margin: 0 auto;
   padding: 34px 24px 34px;           /* multiples of 34px keep text on the ruled lines */
   border-radius: 10px;
@@ -1187,14 +1277,14 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
    Final surprise: gift box
    ===================================================================== */
 .gift-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 30px; transition: opacity .6s ease; }
-.gift-wrap::before { /* pulsing halo */
+.gift-wrap::before { /* pulsing halo (never wider than the screen) */
   content: "";
   position: absolute;
   top: -20px;
   left: 50%;
-  width: 300px;
+  translate: -50% 0;
+  width: min(300px, 100vw - 48px);
   height: 300px;
-  margin-left: -150px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 126, 179, .5), rgba(155, 93, 229, .25) 45%, transparent 70%);
   animation: glow-pulse 2.6s ease-in-out infinite;
@@ -1272,9 +1362,9 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 @keyframes burst-glow { 0% { opacity: 0; transform: scale(1); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(40); } }
 
 .surprise-card {
-  max-width: 520px;
+  max-width: 32.5rem;
   margin: 0 auto;
-  padding: 38px 26px 34px;
+  padding: clamp(26px, 6vw, 38px) clamp(18px, 5vw, 26px) clamp(24px, 5vw, 34px);
   text-align: center;
   background:
     linear-gradient(160deg, #FFFFFF, #FFF0F6 55%, #F5ECFF) padding-box,
@@ -1293,13 +1383,13 @@ body.unlocked .hero > .scroll-cue { animation-name: rise-centered; }
 /* =====================================================================
    Footer + music button
    ===================================================================== */
-.footer { text-align: center; padding: 70px 16px 120px; }
+.footer { text-align: center; padding: 70px max(16px, env(safe-area-inset-right)) calc(120px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 .footer-title { display: inline-block; font-size: clamp(2.2rem, 9vw, 3.6rem); margin: 0; line-height: 1.25; }
 .footer .muted { margin: 0 0 8px; }
 
 .music-btn {
   position: fixed;
-  right: 16px;
+  right: max(16px, env(safe-area-inset-right));
   bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 40;
   width: 56px;
