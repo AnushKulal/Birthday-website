@@ -15,8 +15,8 @@
 window.SITE = {
 
   /* ---------- 1. The basics ---------- */
-  herName: "My Love",          // ← her name or your nickname for her
-  yourName: "Your Name",       // ← signs the letter and the footer
+  herName: "Kajal",            // ← her name or your nickname for her
+  yourName: "Anush",           // ← signs the letter and the footer
   age: null,                   // ← e.g. 24 shows "Happy 24th Birthday". Leave null to hide it.
 
   // Midnight at the start of her birthday. The countdown uses HER phone's clock,
