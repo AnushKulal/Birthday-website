@@ -1,0 +1,9 @@
+Put your photos in this folder with these names (JPG works best):
+
+  us.jpg                      -> round photo on the opening screen
+  story-1.jpg ... story-5.jpg -> "Our Story" timeline
+  gallery-1.jpg ... gallery-12.jpg -> polaroid gallery
+  surprise.jpg (optional)     -> final surprise (also set it in config.js)
+
+Want different names or more/fewer photos? Change them in config.js.
+iPhone .HEIC photos must be converted to .jpg first.

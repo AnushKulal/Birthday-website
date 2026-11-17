@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Keeps the site out of Google and other search engines -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#F8C8DC">
+  <title>Happy Birthday ❤</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23B03A5B' d='M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 3.9 1 6 3.1 2.1-2.1 3.8-3.3 6-3.1 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="locked">
+
+  <!-- Animated gradient glows + floating hearts in the background -->
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div id="hearts" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- ============ COUNTDOWN (shown before her birthday) ============ -->
+  <section id="countdown" class="overlay" hidden>
+    <div class="overlay-card">
+      <div class="big-heart" aria-hidden="true"></div>
+      <p class="script kicker">Patience, my love…</p>
+      <h1 class="overlay-title">Something special is waiting for you</h1>
+      <div class="timer" role="timer" aria-live="off">
+        <div><span id="cd-days">00</span><small>days</small></div>
+        <div><span id="cd-hours">00</span><small>hours</small></div>
+        <div><span id="cd-mins">00</span><small>minutes</small></div>
+        <div><span id="cd-secs">00</span><small>seconds</small></div>
+      </div>
+      <p class="muted">Come back at midnight on your birthday ✨</p>
+      <button type="button" class="btn ghost skip-btn" id="cd-skip" hidden>Skip the countdown →</button>
+    </div>
+  </section>
+
+  <!-- ============ LOCK SCREEN ============ -->
+  <section id="gate" class="overlay" hidden>
+    <form class="overlay-card" id="gate-form" novalidate>
+      <div class="big-heart" aria-hidden="true"></div>
+      <p class="script kicker" id="gate-kicker">For your eyes only</p>
+      <h1 class="overlay-title" id="gate-title">Answer this to open your surprise</h1>
+      <div id="gate-quiz">
+        <label for="gate-answer" id="gate-question" class="gate-question"></label>
+        <input id="gate-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer…">
+      </div>
+      <button type="submit" class="btn" id="gate-btn">Unlock ❤</button>
+      <p id="gate-msg" class="gate-msg" role="status" aria-live="polite"></p>
+      <button type="button" id="gate-hint-btn" class="link-btn" hidden>Need a hint?</button>
+    </form>
+  </section>
+
+  <main id="main">
+
+    <!-- ============ HERO ============ -->
+    <section id="hero" class="hero">
+      <div class="hero-ring"><div class="hero-photo" id="hero-photo"></div></div>
+      <h1 class="hero-title">
+        <span class="script" id="hero-greeting">Happy Birthday</span>
+        <span class="hero-name" id="hero-name"></span>
+      </h1>
+      <div class="divider" aria-hidden="true"><span>❦</span></div>
+      <p class="hero-msg" id="hero-msg"></p>
+      <a href="#story" class="scroll-cue">
+        <span>Scroll down, my love</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16.5 4.5 9l1.4-1.4 6.1 6.1 6.1-6.1L19.5 9z"/></svg>
+      </a>
+    </section>
+
+    <!-- ============ OUR STORY ============ -->
+    <section id="story" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter one</p>
+          <h2>Our Story</h2>
+          <p class="sub">Every love story is beautiful, but ours is my favourite.</p>
+        </header>
+
+        <div class="together reveal" id="together" hidden>
+          <p class="together-label">We’ve been writing our story for</p>
+          <div class="timer timer-sm">
+            <div><span id="tg-days">0</span><small>days</small></div>
+            <div><span id="tg-hours">0</span><small>hours</small></div>
+            <div><span id="tg-mins">0</span><small>minutes</small></div>
+            <div><span id="tg-secs">0</span><small>seconds</small></div>
+          </div>
+          <p class="together-foot script">…and counting</p>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <!-- ============ GALLERY ============ -->
+    <section id="gallery" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter two</p>
+          <h2>Moments with You</h2>
+          <p class="sub">Some of my favourite pictures, mostly because you’re in them.</p>
+        </header>
+        <div class="gallery" id="gallery-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ REASONS ============ -->
+    <section id="reasons" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter three</p>
+          <h2>Reasons I Love You</h2>
+          <p class="sub">Tap the card. Then keep tapping. I could go on forever.</p>
+        </header>
+
+        <div class="deck reveal">
+          <span class="deck-layer l2" aria-hidden="true"></span>
+          <span class="deck-layer l1" aria-hidden="true"></span>
+          <button class="reason-card" id="reason-card" type="button" aria-live="polite">
+            <span class="rc-inner">
+              <span class="rc-face rc-front">
+                <span class="rc-heart" aria-hidden="true"></span>
+                <span class="rc-front-title">Reasons I love you</span>
+                <span class="rc-tap">tap to reveal</span>
+              </span>
+              <span class="rc-face rc-back">
+                <span class="rc-label" id="reason-label">Reason #1</span>
+                <span class="rc-text" id="reason-text"></span>
+                <span class="rc-next" id="reason-next-hint">tap for the next one →</span>
+              </span>
+            </span>
+          </button>
+        </div>
+        <div class="deck-progress reveal" aria-hidden="true"><span id="reason-bar"></span></div>
+        <p class="deck-count reveal" id="reason-count"></p>
+      </div>
+    </section>
+
+    <!-- ============ MAKE A WISH ============ -->
+    <section id="wish" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter four</p>
+          <h2>Make a Wish</h2>
+          <p class="sub">Close your eyes, make a wish, then blow out the candles.</p>
+        </header>
+
+        <div class="cake-stage reveal">
+          <div class="candles" id="candles"></div>
+          <div class="tier tier-top"><span class="frosting"></span></div>
+          <div class="tier tier-bottom"><span class="frosting"></span></div>
+          <div class="plate"></div>
+        </div>
+
+        <div class="wish-controls reveal" id="wish-controls">
+          <button type="button" class="btn ghost" id="mic-btn">🎤 Blow into your mic</button>
+          <p class="muted small" id="wish-status">…or tap each flame to blow it out</p>
+        </div>
+        <div class="wish-done" id="wish-done" hidden>
+          <p class="script wish-msg" id="wish-msg"></p>
+          <button type="button" class="link-btn" id="relight-btn">Light the candles again 🕯️</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LOVE LETTER ============ -->
+    <section id="letter" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter five</p>
+          <h2>A Letter for You</h2>
+          <p class="sub">Some things are better said slowly.</p>
+        </header>
+
+        <div class="envelope-wrap reveal" id="envelope-wrap">
+          <button class="envelope" id="envelope" type="button" aria-label="Open the letter">
+            <span class="env-back"></span>
+            <span class="env-letter"><span>For you ❤</span></span>
+            <span class="env-front"></span>
+            <span class="env-flap"></span>
+            <span class="env-seal" aria-hidden="true">❤</span>
+          </button>
+          <p class="tap-hint">Tap the envelope</p>
+        </div>
+
+        <article class="letter-paper" id="letter-paper" hidden>
+          <p class="letter-greeting" id="letter-greeting"></p>
+          <div class="letter-body" id="letter-body"></div>
+          <div class="letter-end" id="letter-end">
+            <p class="letter-closing" id="letter-closing"></p>
+            <p class="letter-sign" id="letter-sign"></p>
+          </div>
+          <button type="button" class="link-btn letter-skip" id="letter-skip">Show the whole letter</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ FINAL SURPRISE ============ -->
+    <section id="surprise" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">And finally…</p>
+          <h2>One Last Surprise</h2>
+          <p class="sub">Go on, open it.</p>
+        </header>
+
+        <div class="gift-wrap reveal" id="gift-wrap">
+          <button class="gift" id="gift" type="button" aria-label="Open your gift">
+            <span class="gift-glow"></span>
+            <span class="gift-lid"><span class="gift-bow"></span></span>
+            <span class="gift-box"></span>
+          </button>
+          <p class="tap-hint">Tap the gift</p>
+        </div>
+
+        <div class="surprise-card" id="surprise-card" hidden>
+          <p class="script kicker" id="surprise-teaser"></p>
+          <h3 id="surprise-title"></h3>
+          <div id="surprise-photo"></div>
+          <p id="surprise-msg"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+      <p class="script footer-title" id="footer-title"></p>
+      <div class="divider" aria-hidden="true"><span>❦</span></div>
+      <p class="muted">Made with all my love, by <span id="footer-name"></span></p>
+      <a href="#hero" class="link-btn">↑ Back to the beginning</a>
+    </footer>
+  </main>
+
+  <!-- Music toggle -->
+  <button id="music-btn" class="music-btn" type="button" aria-label="Play our song" aria-pressed="false" hidden>
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  </button>
+  <div class="now-playing" id="now-playing" aria-hidden="true"></div>
+  <audio id="music" loop preload="none"></audio>
+
+  <!-- Photo viewer -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+    <button class="lb-btn lb-close" id="lb-close" type="button" aria-label="Close">✕</button>
+    <button class="lb-btn lb-prev" id="lb-prev" type="button" aria-label="Previous photo">‹</button>
+    <figure class="lb-figure">
+      <img id="lb-img" alt="">
+      <figcaption id="lb-cap" class="script"></figcaption>
+    </figure>
+    <button class="lb-btn lb-next" id="lb-next" type="button" aria-label="Next photo">›</button>
+  </div>
+
+  <script src="vendor/confetti.browser.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
