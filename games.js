@@ -31,8 +31,10 @@
         help: 'Tap two cards to turn them over. Find all the matching pairs.', mount: mountMemory },
       { id: 'catch', icon: '🧺', title: 'Catch My Love', blurb: 'Catch the falling hearts, dodge the broken ones.',
         help: 'Drag (or use the arrow keys) to move the basket. Golden hearts are worth 3. Broken hearts take 2 away.', mount: mountCatch },
-      { id: 'scratch', icon: '🎟️', title: 'Scratch & See', blurb: 'Scratch the card to reveal a secret.',
-        help: 'Rub the card with your finger (or mouse) until the secret shows.', mount: mountScratch },
+      { id: 'scratch', icon: '🎟️', title: 'Scratch & See',
+        blurb: opt('scratch').revealSong ? 'Scratch the card to reveal a secret. Turn your sound on 🔊' : 'Scratch the card to reveal a secret.',
+        help: 'Rub the card with your finger (or mouse) until the secret shows.' + (opt('scratch').revealSong ? ' Sound on! 🔊' : ''),
+        mount: mountScratch },
       { id: 'stars', icon: '✨', title: 'Connect Our Stars', blurb: 'Join the stars in order and see what they draw.',
         help: 'Tap the stars in order, starting from 1.', mount: mountStars },
       { id: 'balloons', icon: '🎈', title: 'Pop the Balloons', blurb: 'Every balloon hides one word of a message.',
@@ -632,7 +634,17 @@
       var o = api.opts;
       var wrap = el('div', 'scratch');
       var card = el('div', 'scratch-card');
-      var secret = el('p', 'scratch-secret', fill(o.secret || 'Your next date is on me: anywhere you choose. ❤'));
+      var song = o.revealSong && window.BirthdaySong && window.BirthdaySong.available();
+      var secret;
+      if (song) {                      // the secret is a song made for her
+        secret = el('div', 'scratch-secret scratch-song');
+        secret.appendChild(el('span', 'song-notes', '🎶'));
+        secret.appendChild(el('span', 'song-intro', fill(o.songIntro || 'I made you a song')));
+        secret.appendChild(el('span', 'song-title', window.BirthdaySong.title()));
+        secret.appendChild(el('span', 'song-hint', 'Turn your volume up 🔊'));
+      } else {
+        secret = el('p', 'scratch-secret', fill(o.secret || 'Your next date is on me: anywhere you choose. ❤'));
+      }
       var canvas = el('canvas', 'scratch-canvas');
       canvas.setAttribute('aria-label', 'Scratch card. Rub it to reveal the secret.');
       card.appendChild(secret);
@@ -700,7 +712,10 @@
         canvas.classList.add('gone');
         info.textContent = '';
         ctx.burstAt(card);
-        timer = setTimeout(function () { api.win(o.message || 'Now you know my secret. 😉'); }, 1600);
+        if (song) window.BirthdaySong.reveal();      // the song starts as the secret appears
+        timer = setTimeout(function () {
+          api.win(song ? (o.songMessage || 'That’s your song. Made just for you. 💗') : (o.message || 'Now you know my secret. 😉'));
+        }, song ? 4200 : 1600);
       }
       canvas.addEventListener('pointerdown', function (e) {
         if (done) return;

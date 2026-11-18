@@ -63,11 +63,13 @@ window.SITE = {
 
 
   /* ---------- 3. Music ---------- */
-  // Put your song in the "music" folder with exactly this file name.
-  // It starts when she unlocks the site and loops softly. Use src: null to turn music off.
+  // Your song: "Kaju — You Feel Like Home" (Take 2). It starts when she unlocks the site and loops softly.
+  // Two copies: the original (m4a) and an MP3 backup; each browser plays the first one it supports.
+  // Use src: null to turn music off.
   music: {
-    src: "music/our-song.mp3",
-    title: "Our Song",
+    src: ["music/our-song.m4a", "music/our-song.mp3"],
+    title: "Kaju — You Feel Like Home",
+    reveal: "scratch",   // keep the song a surprise until she scratches the card (or opens the letter); "unlock" = play right away
   },
 
 
@@ -405,7 +407,11 @@ window.SITE = {
       message: "You caught every bit of my love. Don’t worry, there’s plenty more where that came from.",
     },
     scratch: {
-      secret: "Your next date is on me: anywhere you choose. ❤",   // ← the hidden secret
+      revealSong: true,                                            // the secret is your song
+      songIntro: "I made you a song",
+      songMessage: "That’s your song, my Kaju. Made just for you, because you feel like home. 💗",
+      // used only if revealSong is false (or there's no song):
+      secret: "Your next date is on me: anywhere you choose. ❤",
       message: "Now you know my secret. Pick the place! 😉",
     },
     stars: {

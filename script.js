@@ -188,6 +188,9 @@
   var audio = $('#music');
   var musicBtn = $('#music-btn');
   var musicOk = !!(cfg.music && cfg.music.src);
+  // music.reveal = "scratch": the song stays a surprise until Scratch & See (or the love letter) reveals it
+  var songHidden = !!(cfg.music && cfg.music.reveal === 'scratch');
+  if (songHidden && !PREVIEW && storage('bday-song') === '1') songHidden = false;   // already revealed on this phone
 
   function setPlaying(on) {
     musicBtn.classList.toggle('playing', on);
@@ -217,8 +220,41 @@
       });
     }
   }
+  // phones only let a page play sound after a tap: play muted for an instant during the unlock tap
+  function primeMusic() {
+    if (!musicOk) return;
+    try {
+      audio.muted = true;
+      var p = audio.play();
+      var done = function () { audio.pause(); audio.currentTime = 0; audio.muted = false; };
+      if (p && p.then) p.then(done).catch(function () { audio.muted = false; });
+      else done();
+    } catch (e) { audio.muted = false; }
+  }
+  // used by Scratch & See (games.js) and the love letter
+  window.BirthdaySong = {
+    available: function () { return musicOk; },
+    title: function () { return (cfg.music && cfg.music.title) || 'Our Song'; },
+    revealed: function () { return !songHidden; },
+    reveal: function () {
+      if (!musicOk) return false;
+      var first = songHidden;
+      songHidden = false;
+      if (!PREVIEW) storage('bday-song', '1');
+      musicBtn.hidden = false;
+      if (first || audio.paused) { if (first) audio.currentTime = 0; playMusic(true); }
+      return true;
+    },
+  };
+
   if (musicOk) {
-    audio.src = cfg.music.src;
+    // pick the first copy of the song this browser can play
+    var srcs = [].concat(cfg.music.src);
+    var TYPES = { m4a: 'audio/mp4; codecs="mp4a.40.2"', mp4: 'audio/mp4', aac: 'audio/aac', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav' };
+    audio.src = srcs.filter(function (s) {
+      var t = TYPES[(String(s).split('.').pop() || '').toLowerCase()];
+      return !t || (audio.canPlayType && audio.canPlayType(t) !== '');
+    })[0] || srcs[0];
     audio.addEventListener('error', disableMusic);
     musicBtn.addEventListener('click', function () {
       if (audio.paused) playMusic(false);
@@ -376,7 +412,8 @@
         }
       }
       // Success. Start music inside the tap itself (phones require this).
-      playMusic(true);
+      if (songHidden) primeMusic();   // silently "unlock" audio now, so the reveal can play it later
+      else playMusic(true);
       if (!PREVIEW) storage('bday-unlocked', '1');
       unlock();
     });
@@ -390,7 +427,7 @@
       document.body.classList.remove('locked');
       document.body.classList.add('unlocked');
       window.scrollTo(0, 0);
-      if (musicOk) musicBtn.hidden = false;
+      if (musicOk && !songHidden) musicBtn.hidden = false;
       celebrate(2600);
       startScrollProgress();
       startTapHearts();
@@ -854,6 +891,8 @@
 
     env.addEventListener('click', function () {
       if (env.classList.contains('open')) return;
+      // if she hasn't found the song in Scratch & See yet, it starts with the letter
+      if (window.BirthdaySong && !window.BirthdaySong.revealed()) window.BirthdaySong.reveal();
       env.classList.add('open');
       burst({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
       setTimeout(function () { wrap.classList.add('fading'); }, 1500);
