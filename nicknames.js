@@ -344,7 +344,7 @@
 
     /* ----- Donkey card ----- */
     var meadow = el('div', 'name-stage meadow');
-    ['m-hill m-hill-1', 'm-hill m-hill-2', 'm-sun'].forEach(function (c) { meadow.appendChild(el('span', c)); });
+    meadow.appendChild(el('span', 'm-sun'));
     for (var f = 0; f < 6; f++) {
       var fl = el('span', 'm-flower');
       fl.style.left = (6 + f * 16 + Math.random() * 6) + '%';

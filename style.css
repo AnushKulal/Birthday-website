@@ -781,7 +781,7 @@ body.unlocked .scroll-cue { animation: rise 1.2s ease 3.8s both; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .lb-figure { margin: 0; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 .lb-figure img {
-  max-width: min(92vw, 900px);
+  max-width: min(calc(100vw - 136px), 900px);   /* room for the ‹ › arrows */
   max-height: calc(100vh - 180px);
   max-height: calc(100svh - 180px);
   object-fit: contain;
@@ -2406,11 +2406,13 @@ body.unlocked .hero-bear-r { animation-delay: 2.8s; }
 .katli .katli-eyes { transform-box: fill-box; transform-origin: center; animation: bear-blink 4s infinite; }
 
 /* the meadow and the little donkey */
-.meadow { background: linear-gradient(180deg, #FFEFF6 0%, #FDE3EE 45%, #E9F5E1 72%); }
+.meadow {
+  background:
+    radial-gradient(ellipse 60% 34% at 18% 100%, #C8E6B8 0 99%, transparent 100%),
+    radial-gradient(ellipse 62% 30% at 86% 102%, #B5DDA3 0 99%, transparent 100%),
+    linear-gradient(180deg, #FFEFF6 0%, #FDE3EE 45%, #E9F5E1 72%);
+}
 .m-sun { position: absolute; top: 12%; right: 12%; width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle, #FFF2C2, #F6D77A); box-shadow: 0 0 24px rgba(246, 215, 122, .7); }
-.m-hill { position: absolute; bottom: -40%; width: 90%; height: 70%; border-radius: 50%; }
-.m-hill-1 { left: -20%; background: #C8E6B8; }
-.m-hill-2 { right: -25%; bottom: -46%; background: #B5DDA3; }
 .m-flower { position: absolute; z-index: 1; width: 9px; height: 9px; border-radius: 50%; background: #F1D78A; box-shadow: 0 -6px 0 #FFC2DA, 6px 0 0 #FFC2DA, 0 6px 0 #FFC2DA, -6px 0 0 #FFC2DA; }
 .donkey-btn { position: absolute; bottom: -8px; left: 50%; z-index: 2; width: min(40%, 8.5rem); padding: 0; border: 0; background: none; cursor: pointer; translate: -50% 0; }
 .donkey-btn .donkey { display: block; width: 100%; height: auto; overflow: visible; }
