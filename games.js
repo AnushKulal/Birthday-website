@@ -965,13 +965,15 @@
       ['#letter .section-head', 'left:4%;top:8px'],
       ['.footer', 'right:9%;top:24%'],
     ];
-    var chip = null, toast = null, toastTimer = 0;
+    var chip = null, toast = null, toastTimer = 0, intro = null;
     function huntMessage() { return opt('hunt').message || 'You found every heart I hid for you. Just like you found your way into mine.'; }
-    function updateChip(show) {
+    function huntDone() { return hunt.total > 0 && hunt.found.length >= hunt.total; }
+    function updateChip() {
       if (!chip) return;
-      chip.textContent = '❤ ' + hunt.found.length + ' / ' + hunt.total;
-      if (show) chip.hidden = false;
-      chip.classList.toggle('complete', hunt.found.length >= hunt.total);
+      var n = hunt.found.length;
+      chip.textContent = '❤ ' + n + ' / ' + hunt.total + (huntDone() ? ' ✓' : '');
+      chip.setAttribute('aria-label', 'Hidden hearts found: ' + n + ' of ' + hunt.total + '. Open the heart hunt.');
+      chip.classList.toggle('complete', huntDone());
     }
     function showToast(text) {
       if (!toast) return;
@@ -980,20 +982,84 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
     }
+    function openHunt() {
+      var g = GAMES.filter(function (x) { return x.id === 'hunt'; })[0];
+      if (g) openGame(g, tiles.hunt && tiles.hunt.btn);
+    }
+    // Scroll to the nearest heart she hasn't found yet and make it glow.
+    function hintHeart() {
+      var left = [].slice.call(document.querySelectorAll('.hidden-heart:not(.found)'));
+      if (!left.length) return;
+      var mid = window.innerHeight / 2;
+      left.sort(function (a, b) { return Math.abs(a.getBoundingClientRect().top - mid) - Math.abs(b.getBoundingClientRect().top - mid); });
+      var h = left[0];
+      var rv = h.closest('.reveal');
+      if (rv) rv.classList.add('in');
+      h.scrollIntoView({ behavior: ctx.reduced ? 'auto' : 'smooth', block: 'center' });
+      h.classList.remove('hinted');
+      void h.offsetWidth;
+      h.classList.add('hinted');
+      setTimeout(function () { h.classList.remove('hinted'); }, 4500);
+    }
+    // The little note that tells her about the hidden hearts, shown after the opening animation.
+    function closeIntro(remember) {
+      if (!intro) return;
+      var it = intro;
+      intro = null;
+      it.classList.add('leaving');
+      setTimeout(function () { it.remove(); }, 400);
+      if (remember) ctx.saveList('bday-hunt-intro', [1]);
+    }
+    function showIntro() {
+      if (!hunt.enabled || huntDone() || intro) return;
+      if (ctx.readList('bday-hunt-intro').length) return;
+      if (!document.body.classList.contains('unlocked')) return;
+      intro = el('div', 'hunt-intro');
+      intro.setAttribute('role', 'dialog');
+      intro.setAttribute('aria-label', 'Hidden hearts');
+      var pic = el('div', 'hunt-intro-bear');
+      pic.setAttribute('aria-hidden', 'true');
+      if (window.Bears) pic.appendChild(window.Bears.make({ color: 'brown', pose: 'heart' }));
+      var body = el('div', 'hunt-intro-body');
+      var msg = el('p');
+      var n = hunt.found.length;
+      if (n === 0) {
+        msg.appendChild(document.createTextNode('Psst… I hid '));
+        msg.appendChild(el('strong', null, hunt.total + ' little hearts'));
+        msg.appendChild(document.createTextNode(' all over this page. Tap them when you spot them. Find all ' + hunt.total + ' for a secret! 💗'));
+      } else {
+        msg.textContent = 'You’ve found ' + n + ' of ' + hunt.total + ' hidden hearts. The rest are still out there… 💗';
+      }
+      var actions = el('div', 'hunt-intro-actions');
+      var go = el('button', 'btn', 'Let’s go!');
+      go.type = 'button';
+      var show = el('button', 'link-btn', 'Show me one');
+      show.type = 'button';
+      go.addEventListener('click', function () { closeIntro(true); });
+      show.addEventListener('click', function () { closeIntro(true); hintHeart(); });
+      actions.appendChild(go);
+      actions.appendChild(show);
+      body.appendChild(msg);
+      body.appendChild(actions);
+      intro.appendChild(pic);
+      intro.appendChild(body);
+      document.body.appendChild(intro);
+    }
     if (hunt.enabled) {
       var want = Math.max(3, Math.min(SPOTS.length, parseInt(opt('hunt').count, 10) || 7));
       var spots = SPOTS.filter(function (s) { return document.querySelector(s[0]); }).slice(0, want);
       hunt.total = spots.length;
       hunt.found = hunt.found.filter(function (k) { return k < hunt.total; });
-      chip = el('div', 'hunt-chip');
-      chip.hidden = true;
-      chip.setAttribute('aria-hidden', 'true');
+      chip = el('button', 'hunt-chip');
+      chip.type = 'button';
+      chip.addEventListener('click', openHunt);
       toast = el('div', 'hunt-toast');
       toast.setAttribute('role', 'status');
       toast.setAttribute('aria-live', 'polite');
       document.body.appendChild(chip);
       document.body.appendChild(toast);
-      updateChip(hunt.found.length > 0 && hunt.found.length < hunt.total);
+      updateChip();
+      document.addEventListener('site:unlocked', function () { setTimeout(showIntro, 5200); });
 
       spots.forEach(function (s, k) {
         if (hunt.found.indexOf(k) !== -1) return;
@@ -1012,15 +1078,12 @@
           setTimeout(function () { h.remove(); }, 900);
           if (hunt.found.indexOf(k) === -1) hunt.found.push(k);
           ctx.saveList('bday-hunt', hunt.found);
-          updateChip(true);
+          updateChip();
           refreshTiles();
-          if (hunt.found.length >= hunt.total) {
+          if (huntDone()) {
+            closeIntro(true);
             showToast('You found all ' + hunt.total + ' hearts! ❤');
-            setTimeout(function () {
-              var g = GAMES.filter(function (x) { return x.id === 'hunt'; })[0];
-              openGame(g, tiles.hunt && tiles.hunt.btn);
-              win(huntMessage());
-            }, 1100);
+            setTimeout(function () { openHunt(); win(huntMessage()); }, 1100);
           } else {
             showToast('Heart ' + hunt.found.length + ' of ' + hunt.total + ' found! Keep looking…');
           }
@@ -1037,14 +1100,22 @@
       var p1 = el('p', 'hunt-count', n + ' of ' + hunt.total + ' hearts found');
       var p2 = el('p', 'hunt-text', n >= hunt.total
         ? fill(huntMessage())
-        : 'I hid ' + hunt.total + ' little hearts all over this page. Keep your eyes open as you scroll, and tap one when you spot it. Find them all for a secret.');
-      var go = el('button', 'btn', n >= hunt.total ? 'Close' : 'Start looking');
+        : 'I hid ' + hunt.total + ' little hearts all over this page. They glow softly and wiggle a little. Tap one when you spot it, and find them all for a secret.');
+      var actions = el('div', 'hunt-info-actions');
+      if (n < hunt.total) {
+        var hint = el('button', 'btn', 'Show me a hint');
+        hint.type = 'button';
+        hint.addEventListener('click', function () { closeGame(); setTimeout(hintHeart, 350); });
+        actions.appendChild(hint);
+      }
+      var go = el('button', n >= hunt.total ? 'btn' : 'link-btn', n >= hunt.total ? 'Close' : 'I’ll find them myself');
       go.type = 'button';
       go.addEventListener('click', closeGame);
+      actions.appendChild(go);
       wrap.appendChild(row);
       wrap.appendChild(p1);
       wrap.appendChild(p2);
-      wrap.appendChild(go);
+      wrap.appendChild(actions);
       area.appendChild(wrap);
     }
 

@@ -346,6 +346,7 @@
       celebrate(2600);
       startScrollProgress();
       startTapHearts();
+      try { document.dispatchEvent(new CustomEvent('site:unlocked')); } catch (e) { /* very old browser */ }
     }, 750);
   }
 
