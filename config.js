@@ -27,6 +27,10 @@ window.SITE = {
   // Set to false before sending her the link if she should wait until midnight!
   allowSkip: true,
 
+  // The skip button disappears by itself at this moment (2 PM India time, 29 Nov).
+  // After that she has to wait for the countdown. Use null to keep the button forever.
+  skipUntil: "2026-11-29T14:00:00+05:30",
+
   // The day you got together, for the live "days together" counter. Use null to hide it.
   togetherSince: "2023-02-14",
 
@@ -242,6 +246,10 @@ window.SITE = {
   // ✍️ Change any of the messages. {her} becomes her name, {me} becomes yours.
   // To hide a game, add  enabled: false  to it.
   games: {
+    arrow: {
+      goal: 10,                                             // hearts to hit
+      message: "Right through the heart! Don’t worry, it was already yours. ❤",
+    },
     memory: {
       symbols: ["❤️", "🌹", "💍", "🧸", "🍫", "💌"],      // 3 to 8 pairs
       message: "Every piece of you matches every piece of me. ❤",

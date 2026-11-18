@@ -255,14 +255,16 @@
       setTimeout(function () { countdown.hidden = true; }, 900);
       showGate();
     }
-    if (cfg.allowSkip !== false) {
-      var skip = $('#cd-skip');
-      skip.hidden = false;
-      skip.addEventListener('click', finish);
-    }
+    // The skip button shows only while allowSkip is on and the skipUntil moment hasn't passed.
+    var skip = $('#cd-skip');
+    var skipEnd = parseLocal(cfg.skipUntil);
+    function skipAllowed() { return cfg.allowSkip !== false && (!skipEnd || Date.now() < skipEnd.getTime()); }
+    skip.hidden = !skipAllowed();
+    skip.addEventListener('click', function () { if (skipAllowed()) finish(); });
     function tick() {
       var diff = target.getTime() - Date.now();
       if (diff <= 0) { finish(); return; }
+      if (!skip.hidden && !skipAllowed()) skip.hidden = true;   // switches off live at skipUntil
       d.textContent = pad(Math.floor(diff / 864e5));
       h.textContent = pad(Math.floor(diff / 36e5) % 24);
       m.textContent = pad(Math.floor(diff / 6e4) % 60);
@@ -957,6 +959,9 @@
   buildOpenWhen();
   buildLetter();
   buildSurprise();
+  if (window.Bears) {           // cute animated teddy bears live in bears.js
+    try { window.Bears.decorate(); } catch (e) { if (window.console) console.error('Bears failed to load:', e); }
+  }
   if (window.BirthdayGames) {   // mini games live in games.js
     try {
       window.BirthdayGames.init({ cfg: cfg, el: el, $: $, reduced: REDUCED, preview: PREVIEW,

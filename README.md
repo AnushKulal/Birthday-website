@@ -13,14 +13,16 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | **Gallery** | Polaroid-style photos; tap one to view it full screen (swipe between them) |
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
 | **How Well Do You Know Us?** | A 5-question quiz with cute reactions and a final score |
-| **Play With Me** | 7 mini games: Match Our Moments, Catch My Love, Scratch & See, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
+| **Play With Me** | 8 mini games: Cupid's Arrow, Match Our Moments, Catch My Love, Scratch & See, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
 | **Make a Wish** | A cake whose candles she blows out by tapping, or by blowing into her mic |
 | **Love Coupons** | Tickets she can redeem (a stamp lands on them; her phone remembers) |
 | **Open When…** | Little letters for different moments: when she misses you, can't sleep, and more |
 | **Love Letter** | An envelope that opens, then your letter types itself out |
 | **Final Surprise** | A gift box that bursts open to reveal her real present or plan |
 
-Rose petals drift across the whole site, and tapping anywhere releases a little heart.
+Rose petals drift across the whole site, and tapping anywhere releases a little heart. Two original animated teddy bears (Kajal's pink bear with a bow, and Anush's brown bear) blink, wave, snooze, hold hearts and dance in different places (drawn in `bears.js`).
+
+The countdown's skip button disappears by itself at `skipUntil` (2 PM India time on 29 Nov).
 
 ## 1. Personalise it (edit `config.js`)
 

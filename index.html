@@ -323,11 +323,14 @@
       <div class="game-stage">
         <div class="game-area" id="game-area"></div>
         <div class="game-win" id="game-win" hidden>
-          <p class="script game-win-kicker">You did it!</p>
-          <p class="game-win-msg" id="game-win-msg"></p>
-          <div class="game-win-actions">
-            <button type="button" class="btn" id="game-again">Play again</button>
-            <button type="button" class="link-btn" id="game-done">Back to the games</button>
+          <div class="game-win-inner">
+            <div class="game-win-bear" id="game-win-bear" aria-hidden="true"></div>
+            <p class="script game-win-kicker">You did it!</p>
+            <p class="game-win-msg" id="game-win-msg"></p>
+            <div class="game-win-actions">
+              <button type="button" class="btn" id="game-again">Play again</button>
+              <button type="button" class="link-btn" id="game-done">Back to the games</button>
+            </div>
           </div>
         </div>
       </div>
@@ -357,6 +360,7 @@
 
   <script src="vendor/confetti.browser.js"></script>
   <script src="config.js"></script>
+  <script src="bears.js"></script>
   <script src="games.js"></script>
   <script src="script.js"></script>
 </body>

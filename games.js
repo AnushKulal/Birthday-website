@@ -25,6 +25,8 @@
     }
 
     var GAMES = [
+      { id: 'arrow', icon: '🏹', title: 'Cupid’s Arrow', blurb: 'Help my little bear shoot arrows through the floating hearts.',
+        help: 'Drag to aim and let go to shoot (a quick tap shoots too). Golden hearts count double.', mount: mountArrow },
       { id: 'memory', icon: '💞', title: 'Match Our Moments', blurb: 'Flip the cards and find every pair.',
         help: 'Tap two cards to turn them over. Find all the matching pairs.', mount: mountMemory },
       { id: 'catch', icon: '🧺', title: 'Catch My Love', blurb: 'Catch the falling hearts, dodge the broken ones.',
@@ -84,6 +86,16 @@
     var modal = $('#game-modal'), area = $('#game-area'), titleEl = $('#game-title'), helpEl = $('#game-help'),
         winBox = $('#game-win'), winMsg = $('#game-win-msg'), againBtn = $('#game-again');
     var current = null, instance = null, lastTile = null;
+    var winBear = $('#game-win-bear');
+    if (winBear && window.Bears) winBear.appendChild(window.Bears.make({ color: 'pink', pose: 'dance', bow: true }));
+
+    function drawHeart(g, x, y, s) {
+      g.beginPath();
+      g.moveTo(x, y + s * 0.35);
+      g.bezierCurveTo(x - s * 0.62, y - s * 0.02, x - s * 0.36, y - s * 0.58, x, y - s * 0.2);
+      g.bezierCurveTo(x + s * 0.36, y - s * 0.58, x + s * 0.62, y - s * 0.02, x, y + s * 0.35);
+      g.closePath();
+    }
 
     function openGame(g, tile) {
       current = g;
@@ -128,6 +140,239 @@
     againBtn.addEventListener('click', startGame);
     modal.addEventListener('click', function (e) { if (e.target === modal) closeGame(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGame(); });
+
+    /* =================================================================
+       0. Cupid's Arrow (canvas): a bear with a bow shoots at floating hearts
+       ================================================================= */
+    function mountArrow(area, api) {
+      var goal = Math.max(3, parseInt(api.opts.goal, 10) || 10);
+      var wrap = el('div', 'arrow-game');
+      var box = el('div', 'arrow-box');
+      var archer = el('div', 'arrow-archer');
+      archer.setAttribute('aria-hidden', 'true');
+      if (window.Bears) archer.appendChild(window.Bears.make({ color: 'brown', pose: 'peek' }));
+      var canvas = el('canvas', 'arrow-canvas');
+      canvas.tabIndex = 0;
+      canvas.setAttribute('aria-label', 'Cupid’s arrow. Drag to aim and let go to shoot, or use the arrow keys and the space bar.');
+      var startBtn = el('button', 'btn arrow-start', 'Tap to start');
+      startBtn.type = 'button';
+      box.appendChild(archer);
+      box.appendChild(canvas);
+      box.appendChild(startBtn);
+      var hud = el('p', 'game-info');
+      wrap.appendChild(box);
+      wrap.appendChild(hud);
+      area.appendChild(wrap);
+
+      var g = canvas.getContext('2d');
+      var W = 0, H = 0, raf = 0, running = false, last = 0, score = 0, cool = 0, spawnIn = 0, winTimer = 0;
+      var hearts = [], arrows = [], bits = [], pops = [];
+      var angle = -Math.PI / 2, aiming = false, keys = {};
+      var MIN_A = -Math.PI + 0.14, MAX_A = -0.14;
+
+      function bowPos() { return { x: W / 2, y: H - 88 }; }
+      function hudText() { hud.textContent = 'Hearts hit: ' + score + ' of ' + goal; }
+      function size() {
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        W = box.clientWidth;
+        H = box.clientHeight;
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+      }
+      function spawn() {
+        var fromLeft = Math.random() < 0.5;
+        var s = 30 + Math.random() * 12;
+        var speed = (55 + Math.random() * 55 + score * 5) * (W < 420 ? 0.8 : 1);
+        hearts.push({ x: fromLeft ? -s : W + s, y0: Math.max(30, (H - 130) * (0.15 + Math.random() * 0.7)), y: 0, s: s,
+          vx: fromLeft ? speed : -speed, t: Math.random() * 6, gold: Math.random() < 0.15 });
+      }
+      function setAim(px, py) {
+        var b = bowPos();
+        var a = Math.atan2(py - b.y, px - b.x);
+        if (a > MAX_A || a < MIN_A) a = (a > Math.PI / 2 || a < -Math.PI / 2) ? MIN_A : MAX_A;
+        angle = a;
+      }
+      function shoot() {
+        if (!running || cool > 0) return;
+        var b = bowPos(), sp = Math.max(560, H * 1.6);
+        arrows.push({ x: b.x, y: b.y, vx: Math.cos(angle) * sp, vy: Math.sin(angle) * sp });
+        cool = 0.32;
+      }
+      function drawArrow(x, y, ang, len) {
+        g.save();
+        g.translate(x, y);
+        g.rotate(ang);
+        g.strokeStyle = '#7A4A2B';
+        g.lineWidth = 2.4;
+        g.lineCap = 'round';
+        g.beginPath(); g.moveTo(0, 0); g.lineTo(len - 8, 0); g.stroke();
+        g.fillStyle = '#D4AF37';
+        g.beginPath(); g.moveTo(len, 0); g.lineTo(len - 11, -5); g.lineTo(len - 11, 5); g.closePath(); g.fill();
+        g.fillStyle = '#FF8DBA';
+        g.beginPath(); g.moveTo(1, 0); g.lineTo(-8, -6); g.lineTo(5, 0); g.lineTo(-8, 6); g.closePath(); g.fill();
+        g.restore();
+      }
+      function draw() {
+        if (!W) return;
+        g.clearRect(0, 0, W, H);
+        hearts.forEach(function (h) {
+          drawHeart(g, h.x, h.y, h.s);
+          var gr = g.createLinearGradient(h.x - h.s / 2, h.y - h.s / 2, h.x + h.s / 2, h.y + h.s / 2);
+          if (h.gold) { gr.addColorStop(0, '#FCE9A6'); gr.addColorStop(1, '#D4AF37'); }
+          else { gr.addColorStop(0, '#FF8DBA'); gr.addColorStop(1, '#E0457B'); }
+          g.fillStyle = gr;
+          g.shadowColor = h.gold ? 'rgba(212, 175, 55, .6)' : 'rgba(224, 69, 123, .45)';
+          g.shadowBlur = 10;
+          g.fill();
+          g.shadowBlur = 0;
+        });
+        bits.forEach(function (b) {
+          g.globalAlpha = Math.max(0, b.life / 0.8);
+          drawHeart(g, b.x, b.y, b.s);
+          g.fillStyle = b.gold ? '#E9C46A' : '#F48FB1';
+          g.fill();
+          g.globalAlpha = 1;
+        });
+        arrows.forEach(function (a) {
+          var ang = Math.atan2(a.vy, a.vx);
+          drawArrow(a.x - Math.cos(ang) * 22, a.y - Math.sin(ang) * 22, ang, 38);
+        });
+        var b = bowPos();
+        if (running && (aiming || keys.left || keys.right)) {
+          g.save();
+          g.setLineDash([4, 7]);
+          g.strokeStyle = 'rgba(224, 69, 123, .5)';
+          g.lineWidth = 2;
+          g.beginPath();
+          g.moveTo(b.x, b.y);
+          g.lineTo(b.x + Math.cos(angle) * 140, b.y + Math.sin(angle) * 140);
+          g.stroke();
+          g.restore();
+        }
+        // the bow, turned toward where she aims
+        g.save();
+        g.translate(b.x, b.y);
+        g.rotate(angle);
+        g.strokeStyle = '#8B4A2B';
+        g.lineWidth = 4;
+        g.lineCap = 'round';
+        g.beginPath(); g.arc(-6, 0, 24, -1.4, 1.4); g.stroke();
+        var ex = -6 + 24 * Math.cos(1.4), ey = 24 * Math.sin(1.4), pull = cool <= 0 ? -16 : -3;
+        g.strokeStyle = 'rgba(122, 31, 61, .75)';
+        g.lineWidth = 1.4;
+        g.beginPath(); g.moveTo(ex, -ey); g.lineTo(pull, 0); g.lineTo(ex, ey); g.stroke();
+        g.restore();
+        if (cool <= 0) drawArrow(b.x + Math.cos(angle) * -16, b.y + Math.sin(angle) * -16, angle, 44);
+        pops.forEach(function (p) {
+          g.globalAlpha = Math.max(0, p.life / 0.9);
+          g.fillStyle = '#C2306B';
+          g.font = '700 18px Poppins, system-ui, sans-serif';
+          g.textAlign = 'center';
+          g.fillText(p.text, p.x, p.y);
+          g.globalAlpha = 1;
+        });
+      }
+      function step(t) {
+        var dt = Math.min(0.05, (t - last) / 1000);
+        last = t;
+        if (document.hidden) { raf = requestAnimationFrame(step); return; }
+        if (keys.left) angle = Math.max(MIN_A, angle - 1.8 * dt);
+        if (keys.right) angle = Math.min(MAX_A, angle + 1.8 * dt);
+        cool = Math.max(0, cool - dt);
+        spawnIn -= dt;
+        if (spawnIn <= 0 && hearts.length < 6) { spawn(); spawnIn = 0.8 + Math.random() * 0.6; }
+        hearts.forEach(function (h) { h.x += h.vx * dt; h.t += dt; h.y = h.y0 + Math.sin(h.t * 2) * 10; });
+        hearts = hearts.filter(function (h) { return h.x > -h.s * 2 && h.x < W + h.s * 2; });
+        for (var i = arrows.length - 1; i >= 0; i--) {
+          var a = arrows[i];
+          a.x += a.vx * dt;
+          a.y += a.vy * dt;
+          a.vy += 140 * dt;
+          var ang = Math.atan2(a.vy, a.vx), tx = a.x + Math.cos(ang) * 16, ty = a.y + Math.sin(ang) * 16;
+          var hit = -1;
+          for (var k = 0; k < hearts.length; k++) {
+            if (Math.hypot(tx - hearts[k].x, ty - hearts[k].y) < hearts[k].s * 0.6) { hit = k; break; }
+          }
+          if (hit >= 0) {
+            var h = hearts.splice(hit, 1)[0];
+            arrows.splice(i, 1);
+            var pts = h.gold ? 2 : 1;
+            score += pts;
+            hudText();
+            for (var q = 0; q < 10; q++) {
+              bits.push({ x: h.x, y: h.y, vx: (Math.random() - 0.5) * 220, vy: (Math.random() - 0.8) * 200, life: 0.8, s: 6 + Math.random() * 6, gold: h.gold });
+            }
+            pops.push({ x: h.x, y: h.y - 22, text: '+' + pts, life: 0.9 });
+            if (score >= goal) { finish(); return; }
+            continue;
+          }
+          if (a.y < -50 || a.x < -50 || a.x > W + 50 || a.y > H + 50) arrows.splice(i, 1);
+        }
+        bits.forEach(function (b) { b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 400 * dt; b.life -= dt; });
+        bits = bits.filter(function (b) { return b.life > 0; });
+        pops.forEach(function (p) { p.y -= 40 * dt; p.life -= dt; });
+        pops = pops.filter(function (p) { return p.life > 0; });
+        draw();
+        raf = requestAnimationFrame(step);
+      }
+      function finish() {
+        running = false;
+        cancelAnimationFrame(raf);
+        draw();
+        winTimer = setTimeout(function () {
+          api.win(api.opts.message || 'Right through the heart! Don’t worry, it was already yours. ❤');
+        }, 500);
+      }
+      function begin() {
+        startBtn.hidden = true;
+        running = true;
+        spawnIn = 0.2;
+        last = performance.now();
+        try { canvas.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+        raf = requestAnimationFrame(step);
+      }
+      function pos(e) { var r = box.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+      box.addEventListener('pointerdown', function (e) {
+        if (!running) return;
+        aiming = true;
+        var p = pos(e);
+        setAim(p.x, p.y);
+        try { box.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      });
+      box.addEventListener('pointermove', function (e) {
+        if (!running) return;
+        if (aiming || e.pointerType === 'mouse') { var p = pos(e); setAim(p.x, p.y); }
+      });
+      box.addEventListener('pointerup', function () { if (running && aiming) { aiming = false; shoot(); } });
+      box.addEventListener('pointercancel', function () { aiming = false; });
+      startBtn.addEventListener('click', begin);
+      function onKey(e) {
+        if (modal.hidden || !running) return;
+        var down = e.type === 'keydown';
+        if (e.key === 'ArrowLeft') { keys.left = down; e.preventDefault(); }
+        if (e.key === 'ArrowRight') { keys.right = down; e.preventDefault(); }
+        if (down && (e.key === ' ' || e.key === 'ArrowUp')) { e.preventDefault(); shoot(); }
+      }
+      document.addEventListener('keydown', onKey);
+      document.addEventListener('keyup', onKey);
+      window.addEventListener('resize', size);
+      hudText();
+      size();
+      return {
+        destroy: function () {
+          running = false;
+          cancelAnimationFrame(raf);
+          clearTimeout(winTimer);
+          document.removeEventListener('keydown', onKey);
+          document.removeEventListener('keyup', onKey);
+          window.removeEventListener('resize', size);
+        },
+      };
+    }
 
     /* =================================================================
        1. Match Our Moments (memory)
