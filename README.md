@@ -7,7 +7,7 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | Section | What she experiences |
 |---|---|
 | **Countdown** | Before her birthday, a live countdown to midnight (her phone's local time), with an optional skip button |
-| **Lock screen** | A heart draws itself; she picks the date of your first date (Day / Month / Year). Picking another special day gets a sweet reaction, and a hint appears after a wrong try |
+| **Lock screen** | A heart draws itself; she picks your anniversary date (Day / Month / Year): 7 September, any year from 2024. Picking another special day gets a sweet reaction, and a hint appears after a wrong try |
 | **Our Dates** | A scrapbook of every date (Museum, Art museum, Movie, Dinner, Zoo…), with a tally by category and a tap-through photo strip |
 | **Little Names I Call You** | Beluga (a swimming beluga that blows heart bubbles), Kaju Katli (a box of 9 sweets to bite) and Little Donkey (hops and says something sweet). A little beluga also swims across the page now and then |
 | **Opening** | Hearts drift down, "Happy Birthday" writes itself in, her name fades in, and music starts |

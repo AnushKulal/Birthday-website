@@ -41,15 +41,21 @@ window.SITE = {
   lock: {
     enabled: true,                            // false = just a "Tap to open" button
     type: "date",                             // "date" = date picker, "text" = typed answer
-    question: "When was our first date?",
-    answer: "2024-09-16",                     // YYYY-MM-DD (16 September 2024)
+    question: "When is our anniversary?",
+    answer: "2024-09-07",                     // YYYY-MM-DD: the day I proposed (7 September 2024)
+    anyYear: true,                            // 7 Sep 2025 / 2026 also count (every anniversary is that day)
     years: [2023, 2024, 2025, 2026],          // years shown in the picker
-    hint: "September 2024: flowers, nervous smiles and a whole science museum 🔬",
+    hint: "The day I asked you to be mine 💍 (think September…)",
     // sweet reactions when she picks one of your other special days
     nearMisses: {
-      "2024-09-07": "That’s the day I proposed 💍 Our first date came nine days later…",
-      "2023-10-03": "That’s when we first chatted 💬 Our first date came a while later!",
+      "2023-09-07": "Right day, but we weren’t together yet back then! 😄 Try a later year.",
+      "2024-09-16": "That’s our first date at the museum 🏛️ So close! The anniversary is nine days earlier…",
+      "2023-10-03": "That’s when we first chatted 💬 Our anniversary came almost a year later!",
       "2023-10-13": "That’s the day we became besties 💕 Keep going…",
+      "2025-07-01": "That’s our art museum date at MAP 🎨 Lovely day, but not the one!",
+      "2026-08-18": "Movie date! 🎬 Close, but not quite our anniversary.",
+      "2026-09-06": "So close! That’s our dinner at Hellen’s, the night before our anniversary 🕯️",
+      "2026-10-04": "That’s our zoo date 🐒 Go back a little…",
     },
     // used only when type is "text"
     answers: ["museum"],

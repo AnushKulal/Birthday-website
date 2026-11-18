@@ -350,9 +350,10 @@
             msg.textContent = 'Pick a day, a month and a year 💕';
             return;
           }
-          ok = picked === lock.answer;
+          special = (lock.nearMisses || {})[picked] || '';
+          ok = !special && (picked === lock.answer ||
+               (lock.anyYear && picked.slice(5) === lock.answer.slice(5) && picked > lock.answer));
           if (!ok) {
-            special = (lock.nearMisses || {})[picked] || '';
             if (!special && picked.slice(5) === lock.answer.slice(5)) special = 'Right day, wrong year 😄 Try once more!';
             else if (!special && picked.slice(0, 7) === lock.answer.slice(0, 7)) special = 'Right month! Now the exact day… 💭';
           }
