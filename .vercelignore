@@ -1,0 +1,4 @@
+# Helper files that don't belong on the live site
+README.md
+serve.py
+start-site.bat
