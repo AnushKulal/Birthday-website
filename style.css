@@ -1499,6 +1499,8 @@ body.unlocked .scroll-cue { animation: rise 1.2s ease 3.8s both; }
 }
 .coupon-btn:hover:not(:disabled) { transform: scale(1.05); }
 .coupon-btn:disabled { cursor: default; color: var(--rose-deep); background: rgba(255, 255, 255, .85); }
+.coupon-btn.save-again { padding: 8px 12px; font-size: .78rem; }
+.coupon-btn.save-again::before { content: "⬇ "; }
 .coupon-stamp {
   position: absolute;
   top: 50%;

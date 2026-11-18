@@ -17,7 +17,8 @@ window.SITE = {
   /* ---------- 1. The basics ---------- */
   herName: "Kajal",            // ← her name or your nickname for her
   yourName: "Anush",           // ← signs the letter and the footer
-  age: null,                   // ← e.g. 24 shows "Happy 24th Birthday". Leave null to hide it.
+  bornOn: "2004-11-30",        // her date of birth: the site works out her age (22 on 30 Nov 2026)
+  age: null,                   // ← or type an age to override it; null = work it out from bornOn
 
   // Midnight at the start of her birthday. The countdown uses HER phone's clock,
   // so this is midnight wherever she is. Format: "YYYY-MM-DDTHH:MM:SS"
@@ -164,6 +165,7 @@ window.SITE = {
     "With you, I feel at home anywhere.",
     "The future looks brighter because you’re in it.",
     "Simply because you’re you.",
+    "And reason #22: you’re turning 22, and somehow you get more beautiful every single year.",
   ],
 
 

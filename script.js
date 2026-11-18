@@ -28,6 +28,16 @@
     return isNaN(d) ? null : d;
   }
 
+  // her age on this birthday: from "age", or worked out from "bornOn" and "birthday"
+  var AGE = (function () {
+    if (cfg.age) return cfg.age;
+    var born = parseLocal(cfg.bornOn), bday = parseLocal(cfg.birthday);
+    if (!born || !bday) return null;
+    var a = bday.getFullYear() - born.getFullYear();
+    if (bday.getMonth() < born.getMonth() || (bday.getMonth() === born.getMonth() && bday.getDate() < born.getDate())) a--;
+    return a > 0 ? a : null;
+  })();
+
   function ordinal(n) {
     var s = ['th', 'st', 'nd', 'rd'], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
@@ -442,7 +452,7 @@
     var hero = cfg.hero || {};
     var name = cfg.herName || 'My Love';
     document.title = 'Happy Birthday, ' + name + ' ❤';
-    $('#hero-greeting').textContent = cfg.age ? 'Happy ' + ordinal(cfg.age) + ' Birthday' : 'Happy Birthday';
+    $('#hero-greeting').textContent = AGE ? 'Happy ' + ordinal(AGE) + ' Birthday' : 'Happy Birthday';
     $('#hero-name').textContent = name;
     $('#hero-msg').textContent = hero.message || '';
     var slot = $('#hero-photo');
@@ -455,7 +465,7 @@
       $('.hero-ring').remove();
     }
     addSparkles($('#hero'), 7);
-    $('#footer-title').textContent = 'Happy Birthday, ' + name;
+    $('#footer-title').textContent = 'Happy ' + (AGE ? ordinal(AGE) + ' ' : '') + 'Birthday, ' + name;
     $('#footer-name').textContent = cfg.yourName || 'me';
   }
 
@@ -1012,11 +1022,132 @@
   }
 
   /* ---------- love coupons ---------- */
+  /* ---------- printable coupon picture (drawn on a canvas, 8 × 4 inches at 300 dpi) ---------- */
+  function heartPath(g, x, y, s) {
+    g.beginPath();
+    g.moveTo(x, y + s * 0.35);
+    g.bezierCurveTo(x - s * 0.62, y - s * 0.02, x - s * 0.36, y - s * 0.58, x, y - s * 0.2);
+    g.bezierCurveTo(x + s * 0.36, y - s * 0.58, x + s * 0.62, y - s * 0.02, x, y + s * 0.35);
+    g.closePath();
+  }
+  function wrapLines(g, text, maxW) {
+    var words = String(text || '').split(/\s+/), lines = [], line = '';
+    words.forEach(function (w) {
+      var t = line ? line + ' ' + w : w;
+      if (g.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function drawCoupon(c, k, when) {
+    var W = 2400, H = 1200, STUB = 620, R = 70, N = 64, SX = W - STUB;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var g = cv.getContext('2d');
+    var serif = '"Playfair Display", Georgia, serif', sans = 'Poppins, "Segoe UI", Arial, sans-serif', script = '"Dancing Script", "Brush Script MT", cursive';
+    g.fillStyle = '#ffffff';
+    g.fillRect(0, 0, W, H);
+    // ticket shape with two notches at the tear line
+    function ticket() {
+      g.beginPath();
+      g.moveTo(R, 0); g.lineTo(SX - N, 0); g.arc(SX, 0, N, Math.PI, 0, true); g.lineTo(W - R, 0);
+      g.quadraticCurveTo(W, 0, W, R); g.lineTo(W, H - R); g.quadraticCurveTo(W, H, W - R, H);
+      g.lineTo(SX + N, H); g.arc(SX, H, N, 0, Math.PI, true); g.lineTo(R, H);
+      g.quadraticCurveTo(0, H, 0, H - R); g.lineTo(0, R); g.quadraticCurveTo(0, 0, R, 0); g.closePath();
+    }
+    ticket();
+    g.save();
+    g.clip();
+    var bg = g.createLinearGradient(0, 0, SX, H);
+    bg.addColorStop(0, '#FFFFFF'); bg.addColorStop(0.55, '#FFF1F7'); bg.addColorStop(1, '#F4EAFF');
+    g.fillStyle = bg; g.fillRect(0, 0, SX, H);
+    var st = g.createLinearGradient(SX, 0, W, H);
+    st.addColorStop(0, '#FF94BE'); st.addColorStop(0.6, '#E0457B'); st.addColorStop(1, '#A3367A');
+    g.fillStyle = st; g.fillRect(SX, 0, STUB, H);
+    // soft hearts in the background
+    [[1500, 170, 54], [1650, 1020, 70], [880, 120, 40], [760, 650, 46]].forEach(function (h) {
+      heartPath(g, h[0], h[1], h[2]); g.fillStyle = 'rgba(224, 69, 123, .08)'; g.fill();
+    });
+    g.restore();
+    // borders
+    ticket();
+    g.setLineDash([]); g.lineWidth = 10; g.strokeStyle = '#D4AF37'; g.stroke();
+    g.save(); g.setLineDash([22, 16]); g.lineWidth = 4; g.strokeStyle = 'rgba(224, 69, 123, .45)';
+    g.strokeRect(60, 60, SX - 140, H - 120); g.restore();
+    g.save(); g.setLineDash([26, 20]); g.lineWidth = 6; g.strokeStyle = 'rgba(255, 255, 255, .9)';
+    g.beginPath(); g.moveTo(SX, N + 30); g.lineTo(SX, H - N - 30); g.stroke(); g.restore();
+    // main text
+    var x = 140, maxW = SX - 300;
+    g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+    g.fillStyle = '#B8901C'; g.font = '500 46px ' + sans;
+    g.fillText('LOVE COUPON  ·  NO. ' + String(k + 1).padStart(2, '0'), x, 210);
+    g.fillStyle = '#7A1F3D'; g.font = '700 124px ' + serif;
+    var tl = wrapLines(g, c.title || 'A little something', maxW).slice(0, 2), y = 350;
+    if (tl.length > 1) { g.font = '700 100px ' + serif; tl = wrapLines(g, c.title, maxW).slice(0, 2); }
+    tl.forEach(function (l) { g.fillText(l, x, y); y += tl.length > 1 ? 112 : 130; });
+    g.fillStyle = '#5E4350'; g.font = '400 56px ' + sans;
+    wrapLines(g, c.text, maxW).slice(0, 3).forEach(function (l) { g.fillText(l, x, y + 20); y += 76; });
+    g.fillStyle = '#E0457B'; g.font = '700 84px ' + script;
+    g.fillText('For ' + (cfg.herName || 'you') + '   ·   From ' + (cfg.yourName || 'me'), x, H - 200);
+    g.fillStyle = '#8A6A73'; g.font = '400 40px ' + sans;
+    g.fillText('Redeemed on ' + when + '   ·   Valid forever   ·   No expiry date on love', x, H - 120);
+    // stub: a big heart
+    var hx = SX + STUB / 2;
+    heartPath(g, hx, 470, 300); g.fillStyle = 'rgba(255, 255, 255, .95)'; g.fill();
+    g.fillStyle = '#E0457B'; g.font = '700 64px ' + serif; g.textAlign = 'center';
+    g.fillText(String(k + 1).padStart(2, '0'), hx, 500);
+    g.fillStyle = '#ffffff'; g.font = '700 76px ' + script;
+    g.fillText('Valid', hx, 790); g.fillText('forever', hx, 880);
+    g.font = '500 34px ' + sans; g.fillText('Admit one cuddle', hx, 1000);
+    // "Redeemed" stamp
+    g.save();
+    g.translate(SX - 430, 700); g.rotate(-0.24);
+    g.globalAlpha = 0.85; g.strokeStyle = '#C2306B'; g.fillStyle = '#C2306B';
+    g.font = '700 72px ' + serif; g.textAlign = 'left'; g.textBaseline = 'middle';
+    var tw = g.measureText('REDEEMED').width, bw = tw + 150, left = -bw / 2;
+    g.lineWidth = 8; g.strokeRect(left - 30, -86, bw + 60, 172);
+    g.lineWidth = 3; g.strokeRect(left - 12, -68, bw + 24, 136);
+    g.fillText('REDEEMED', left + 20, 6);
+    heartPath(g, left + 20 + tw + 62, 6, 56); g.fill();
+    g.restore();
+    return cv;
+  }
+  function slug(t) { return String(t || 'coupon').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'coupon'; }
+  function downloadCoupon(c, k, when) {
+    try {
+      var url = drawCoupon(c, k, when).toDataURL('image/png');
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'love-coupon-' + String(k + 1).padStart(2, '0') + '-' + slug(c.title) + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return true;
+    } catch (e) { return false; }
+  }
+  var toastEl = null, toastTimer = 0;
+  function toast(text) {
+    if (!toastEl) {
+      toastEl = el('div', 'hunt-toast');
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3600);
+  }
+
   function buildCoupons() {
     var list = cfg.coupons || [];
     if (!list.length) { $('#coupons').remove(); return; }
-    $('#coupons-sub').textContent = 'Yours to use whenever you like. Tap one to redeem it, then show it to ' + (cfg.yourName || 'me') + '.';
+    var me = cfg.yourName || 'me';
+    $('#coupons-sub').textContent = 'Yours to use whenever you like. Tap Redeem and your coupon is saved as a picture: print it and hand it to ' + me + '. ❤';
     var used = readList('bday-coupons');
+    var dates = {};
+    try { dates = JSON.parse(localStorage.getItem('bday-coupon-dates') || '{}') || {}; } catch (e) { dates = {}; }
+    function today() { return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
     var grid = $('#coupons-grid');
     list.forEach(function (c, k) {
       var wrap = el('div', 'coupon-wrap reveal');
@@ -1041,16 +1172,23 @@
       function markUsed(animate) {
         card.classList.add('redeemed');
         if (animate) card.classList.add('just-redeemed');
-        btn.textContent = 'Used ✓';
-        btn.disabled = true;
-        btn.setAttribute('aria-label', (c.title || 'Coupon') + ' redeemed');
+        btn.textContent = 'Save';
+        btn.classList.add('save-again');
+        btn.setAttribute('aria-label', 'Download the ' + (c.title || 'coupon') + ' coupon again');
       }
       if (used.indexOf(k) !== -1) markUsed(false);
       btn.addEventListener('click', function () {
-        markUsed(true);
-        if (used.indexOf(k) === -1) used.push(k);
-        saveList('bday-coupons', used);
-        burstAt(card);
+        var first = used.indexOf(k) === -1;
+        if (first) {
+          used.push(k);
+          saveList('bday-coupons', used);
+          dates[k] = today();
+          if (!PREVIEW) { try { localStorage.setItem('bday-coupon-dates', JSON.stringify(dates)); } catch (e) { /* storage blocked */ } }
+          markUsed(true);
+          burstAt(card);
+        }
+        var ok = downloadCoupon(c, k, dates[k] || today());
+        toast(ok ? 'Coupon saved to your downloads 💌 Print it and hand it to ' + me + '!' : 'Couldn’t save the picture on this browser. Take a screenshot instead 💌');
       });
     });
   }
