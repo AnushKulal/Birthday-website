@@ -7,7 +7,9 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | Section | What she experiences |
 |---|---|
 | **Countdown** | Before her birthday, a live countdown to midnight (her phone's local time), with an optional skip button |
-| **Lock screen** | A heart draws itself; she answers a question only she knows. Wrong answers get a cute nudge and a hint |
+| **Lock screen** | A heart draws itself; she picks the date of your first date (Day / Month / Year). Picking another special day gets a sweet reaction, and a hint appears after a wrong try |
+| **Our Dates** | A scrapbook of every date (Museum, Art museum, Movie, Dinner, Zoo…), with a tally by category and a tap-through photo strip |
+| **Little Names I Call You** | Beluga (a swimming beluga that blows heart bubbles), Kaju Katli (a box of 9 sweets to bite) and Little Donkey (hops and says something sweet). A little beluga also swims across the page now and then |
 | **Opening** | Hearts drift down, "Happy Birthday" writes itself in, her name fades in, and music starts |
 | **Our Story** | A live "days together" counter and a timeline of your milestones |
 | **Gallery** | Polaroid-style photos; tap one to view it full screen (swipe between them) |
@@ -32,7 +34,11 @@ Open `config.js` in any text editor (VS Code, Notepad, TextEdit) and change:
 - `birthday`: **midnight at the start of her birthday**, e.g. `"2026-11-30T00:00:00"`
 - `allowSkip`: `false` hides the countdown's skip button, so she has to wait until midnight
 - `togetherSince`: the day you got together
-- `lock`: the question, accepted answers and a hint
+- `lock`: the date question, the answer (`YYYY-MM-DD`), the years in the picker, a hint, and reactions for other special days
+- `dates`: one entry per date (add new ones at the end; `photos: [...]` gives a card several photos)
+- `nicknames`: the lines Beluga, Kaju Katli and Little Donkey say
+
+**Privacy:** your photos and song are listed in `.gitignore`, so they're never uploaded to the public GitHub copy. They only go to the live site.
 - `story`, `gallery`, `reasons`, `letter`, `surprise`: the words
 - `quiz`: questions about you two (and which option is the right answer)
 - `coupons`, `openWhen`: the coupons and the little letters

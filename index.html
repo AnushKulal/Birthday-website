@@ -54,6 +54,11 @@
       <h1 class="overlay-title" id="gate-title">Answer this to open your surprise</h1>
       <div id="gate-quiz">
         <label for="gate-answer" id="gate-question" class="gate-question"></label>
+        <div class="date-pick" id="gate-date" role="group" aria-labelledby="gate-question" hidden>
+          <select id="gate-day" aria-label="Day"></select>
+          <select id="gate-month" aria-label="Month"></select>
+          <select id="gate-year" aria-label="Year"></select>
+        </div>
         <input id="gate-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer…">
       </div>
       <button type="submit" class="btn" id="gate-btn">Unlock ❤</button>
@@ -103,6 +108,19 @@
       </div>
     </section>
 
+    <!-- ============ OUR DATES ============ -->
+    <section id="dates" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter</p>
+          <h2>Our Dates</h2>
+          <p class="sub">Every date we’ve been on, collected like little treasures.</p>
+        </header>
+        <div class="date-tally reveal" id="date-tally" aria-label="Kinds of dates"></div>
+        <div class="dates-grid" id="dates-grid"></div>
+      </div>
+    </section>
+
     <!-- ============ GALLERY ============ -->
     <section id="gallery" class="chapter">
       <div class="container">
@@ -144,6 +162,18 @@
         </div>
         <div class="deck-progress reveal" aria-hidden="true"><span id="reason-bar"></span></div>
         <p class="deck-count reveal" id="reason-count"></p>
+      </div>
+    </section>
+
+    <!-- ============ LITTLE NAMES ============ -->
+    <section id="names" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter</p>
+          <h2 id="names-title">Little Names I Call You</h2>
+          <p class="sub">Each one comes with a little surprise. Tap them!</p>
+        </header>
+        <div class="names-grid" id="names-grid"></div>
       </div>
     </section>
 
@@ -361,6 +391,7 @@
   <script src="vendor/confetti.browser.js"></script>
   <script src="config.js"></script>
   <script src="bears.js"></script>
+  <script src="nicknames.js"></script>
   <script src="games.js"></script>
   <script src="script.js"></script>
 </body>

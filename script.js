@@ -52,7 +52,7 @@
   }
 
   // A photo box that falls back to a pretty placeholder if the file is missing
-  function photoBox(src, alt, extraClass, onLoad, onMissing) {
+  function photoBox(src, alt, extraClass, onLoad, onMissing, look) {
     var box = el('div', 'photo' + (extraClass ? ' ' + extraClass : ''));
     function placeholder() {
       box.classList.add('is-empty');
@@ -68,6 +68,8 @@
     img.loading = 'lazy';
     img.addEventListener('error', placeholder);
     img.addEventListener('load', function () { if (onLoad) onLoad(img); });
+    if (look && look.focus) { img.style.objectPosition = look.focus; img.style.transformOrigin = look.focus; }
+    if (look && look.zoom) img.style.transform = 'scale(' + look.zoom + ')';
     img.src = src;
     box.appendChild(img);
     return box;
@@ -274,9 +276,38 @@
     timer = setInterval(tick, 1000);
   }
 
+  /* ---------- the lock screen's date picker (Day / Month / Year) ---------- */
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function setupDatePicker(lock) {
+    $('#gate-answer').hidden = true;
+    $('#gate-date').hidden = false;
+    $('#gate-question').setAttribute('for', 'gate-day');
+    var day = $('#gate-day'), month = $('#gate-month'), year = $('#gate-year');
+    function opt(sel, value, text) { var o = document.createElement('option'); o.value = value; o.textContent = text; sel.appendChild(o); }
+    opt(day, '', 'Day');
+    for (var d = 1; d <= 31; d++) opt(day, String(d), String(d));
+    opt(month, '', 'Month');
+    MONTHS.forEach(function (m, i) { opt(month, String(i + 1), m); });
+    opt(year, '', 'Year');
+    var years = lock.years && lock.years.length ? lock.years : [new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()];
+    years.forEach(function (y) { opt(year, String(y), String(y)); });
+    [day, month, year].forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        sel.classList.toggle('chosen', !!sel.value);
+        $('#gate-msg').textContent = '';
+      });
+    });
+  }
+  function pickedDate() {
+    var d = $('#gate-day').value, m = $('#gate-month').value, y = $('#gate-year').value;
+    if (!d || !m || !y) return '';
+    return y + '-' + pad(m) + '-' + pad(d);
+  }
+
   function showGate() {
     var lock = cfg.lock || {};
-    var useQuiz = lock.enabled !== false && lock.question && lock.answers && lock.answers.length;
+    var dateMode = lock.type === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(lock.answer || '');
+    var useQuiz = lock.enabled !== false && lock.question && (dateMode || (lock.answers && lock.answers.length));
     var returning = !PREVIEW && storage('bday-unlocked') === '1';
     var form = $('#gate-form');
     var input = $('#gate-answer');
@@ -293,7 +324,8 @@
       $('#gate-btn').textContent = 'Open your surprise ❤';
     } else {
       $('#gate-question').textContent = lock.question;
-      setTimeout(function () { try { input.focus({ preventScroll: true }); } catch (e) {} }, 700);
+      if (dateMode) setupDatePicker(lock);
+      else setTimeout(function () { try { input.focus({ preventScroll: true }); } catch (e) {} }, 700);
     }
 
     var wrongLines = [
@@ -311,19 +343,34 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (useQuiz && !returning) {
-        var given = normalize(input.value);
-        var ok = given && lock.answers.some(function (a) {
-          var ans = normalize(a);
-          return ans && (given === ans || (ans.length >= 3 && given.indexOf(ans) !== -1));
-        });
+        var ok, special = '';
+        if (dateMode) {
+          var picked = pickedDate();
+          if (!picked) {
+            msg.textContent = 'Pick a day, a month and a year 💕';
+            return;
+          }
+          ok = picked === lock.answer;
+          if (!ok) {
+            special = (lock.nearMisses || {})[picked] || '';
+            if (!special && picked.slice(5) === lock.answer.slice(5)) special = 'Right day, wrong year 😄 Try once more!';
+            else if (!special && picked.slice(0, 7) === lock.answer.slice(0, 7)) special = 'Right month! Now the exact day… 💭';
+          }
+        } else {
+          var given = normalize(input.value);
+          ok = given && lock.answers.some(function (a) {
+            var ans = normalize(a);
+            return ans && (given === ans || (ans.length >= 3 && given.indexOf(ans) !== -1));
+          });
+        }
         if (!ok) {
           tries++;
-          msg.textContent = wrongLines[(tries - 1) % wrongLines.length];
+          msg.textContent = special || wrongLines[(tries - 1) % wrongLines.length];
           form.classList.remove('shake');
           void form.offsetWidth;   // restart animation
           form.classList.add('shake');
           if (lock.hint && tries >= 1) hintBtn.hidden = false;
-          input.select();
+          if (!dateMode) input.select();
           return;
         }
       }
@@ -362,7 +409,7 @@
     $('#hero-msg').textContent = hero.message || '';
     var slot = $('#hero-photo');
     if (hero.photo) {
-      var box = photoBox(hero.photo, 'Us');
+      var box = photoBox(hero.photo, 'Us', null, null, null, { focus: hero.photoFocus, zoom: hero.photoZoom });
       box.classList.add('hero-photo');
       box.id = 'hero-photo';
       slot.replaceWith(box);
@@ -398,7 +445,7 @@
       var art = el('article', 't-item reveal');
       art.appendChild(el('span', 't-dot'));
       var card = el('div', 't-card');
-      if (item.photo) card.appendChild(photoBox(item.photo, item.title));
+      if (item.photo) card.appendChild(photoBox(item.photo, item.title, null, null, null, { focus: item.photoFocus, zoom: item.photoZoom }));
       var body = el('div', 't-body');
       if (item.date) body.appendChild(el('p', 't-date', item.date));
       if (item.title) body.appendChild(el('h3', null, item.title));
@@ -406,6 +453,93 @@
       card.appendChild(body);
       art.appendChild(card);
       wrap.appendChild(art);
+    });
+  }
+
+  /* ---------- our dates: a little scrapbook ---------- */
+  function buildDates() {
+    var list = cfg.dates || [];
+    if (!list.length) { $('#dates').remove(); return; }
+    var grid = $('#dates-grid'), tally = $('#date-tally');
+    var cells = list.length + (cfg.nextDate ? 1 : 0);
+    // pick a layout where every row is full; the "next date" ticket only spans a whole row when it must
+    var nextWide = !(cells % 3 === 0 || cells % 2 === 0);
+    grid.classList.add(cells % 3 === 0 && cells > 2 ? 'three-up' : 'two-up');
+    var counts = {}, order = [];
+    list.forEach(function (d) {
+      var c = d.category || 'Date';
+      if (!counts[c]) { counts[c] = { n: 0, emoji: d.emoji || '💕' }; order.push(c); }
+      counts[c].n++;
+    });
+    order.forEach(function (c) {
+      tally.appendChild(el('span', 'tally-chip', counts[c].emoji + ' ' + c + (counts[c].n > 1 ? ' × ' + counts[c].n : '')));
+    });
+    tally.appendChild(el('span', 'tally-chip soon', '✨ More to come'));
+    list.forEach(function (d, i) {
+      var card = el('article', 'date-card reveal' + (d.first ? ' first' : ''));
+      var pic = el('div', 'date-photo');
+      var shots = (d.photos && d.photos.length ? d.photos : [d.photo]).map(function (p) {
+        return typeof p === 'string' || !p ? { src: p, focus: d.photoFocus, zoom: d.photoZoom } : p;
+      });
+      var main = photoBox(shots[0].src, d.title, null, null, null, { focus: shots[0].focus, zoom: shots[0].zoom });
+      pic.appendChild(main);
+      var stamp = el('span', 'date-stamp', d.emoji || '💕');
+      stamp.setAttribute('aria-hidden', 'true');
+      pic.appendChild(stamp);
+      var body = el('div', 'date-body');
+      if (shots.length > 1) {           // a little strip of photos she can tap through
+        var strip = el('div', 'date-thumbs');
+        strip.setAttribute('role', 'group');
+        strip.setAttribute('aria-label', 'Photos from this date');
+        shots.forEach(function (sh, k) {
+          var t = el('button', 'date-thumb' + (k === 0 ? ' active' : ''));
+          t.type = 'button';
+          t.setAttribute('aria-label', 'Show photo ' + (k + 1) + ' of ' + shots.length);
+          var ti = new Image();
+          ti.alt = '';
+          ti.loading = 'lazy';
+          ti.src = sh.src;
+          if (sh.focus) ti.style.objectPosition = sh.focus;
+          t.appendChild(ti);
+          t.addEventListener('click', function () {
+            var fresh = photoBox(sh.src, d.title, 'swap-in', null, null, { focus: sh.focus, zoom: sh.zoom });
+            pic.replaceChild(fresh, main);
+            main = fresh;
+            strip.querySelectorAll('.date-thumb').forEach(function (x) { x.classList.toggle('active', x === t); });
+          });
+          strip.appendChild(t);
+        });
+        body.appendChild(strip);
+      }
+      body.appendChild(el('p', 'date-no', 'Date No. ' + String(i + 1).padStart(2, '0')));
+      body.appendChild(el('h3', 'date-title', d.title || 'A date'));
+      var meta = el('p', 'date-meta');
+      if (d.date) meta.appendChild(el('span', null, d.date));
+      if (d.category) meta.appendChild(el('span', 'date-cat', (d.emoji ? d.emoji + ' ' : '') + d.category));
+      body.appendChild(meta);
+      if (d.place) body.appendChild(el('p', 'date-place', '📍 ' + d.place));
+      if (d.first) body.appendChild(el('p', 'date-badge', 'Our first date 💕'));
+      if (d.note) body.appendChild(el('p', 'date-note', d.note));
+      card.appendChild(pic);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    if (cfg.nextDate) {
+      var next = el('article', 'date-card next reveal' + (nextWide ? ' wide' : ''));
+      next.appendChild(el('span', 'date-next-icon', '🎟️'));
+      next.appendChild(el('p', 'date-next-text', String(cfg.nextDate).replace('{next}', String(list.length + 1).padStart(2, '0'))));
+      grid.appendChild(next);
+    }
+  }
+
+  /* ---------- chapter numbers follow the order of the sections ---------- */
+  function numberChapters() {
+    var words = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen'];
+    var k = 0;
+    document.querySelectorAll('main .chapter .section-head .kicker').forEach(function (kick) {
+      if (!/^Chapter/.test(kick.textContent.trim())) return;
+      kick.textContent = 'Chapter ' + (words[k] || String(k + 1));
+      k++;
     });
   }
 
@@ -417,6 +551,7 @@
     var list = cfg.gallery || [];
     var grid = $('#gallery-grid');
     if (!list.length) { $('#gallery').remove(); return; }
+    if (list.length % 2 === 1) grid.classList.add('odd');
     list.forEach(function (item, i) {
       var entry = { src: item.photo, caption: item.caption || '', ok: false };
       gallery.push(entry);
@@ -429,7 +564,8 @@
       btn.appendChild(photoBox(item.photo, item.caption,
         null,
         function () { entry.ok = true; },
-        function () { entry.ok = false; btn.classList.add('is-empty-photo'); }
+        function () { entry.ok = false; btn.classList.add('is-empty-photo'); },
+        { focus: item.focus, zoom: item.zoom }
       ));
       btn.appendChild(el('span', 'cap', item.caption || ''));
       btn.addEventListener('click', function () { if (entry.ok) openLightbox(i); });
@@ -952,6 +1088,7 @@
   buildHero();
   buildTogether();
   buildStory();
+  buildDates();
   buildGallery();
   buildReasons();
   buildQuiz();
@@ -960,6 +1097,12 @@
   buildOpenWhen();
   buildLetter();
   buildSurprise();
+  if (window.Nicknames) {       // Beluga, Kaju Katli and Little Donkey live in nicknames.js
+    try {
+      window.Nicknames.init({ cfg: cfg, el: el, $: $, reduced: REDUCED, burstAt: burstAt, celebrate: celebrate });
+    } catch (e) { if (window.console) console.error('Nicknames failed to load:', e); }
+  } else { var ns = $('#names'); if (ns) ns.remove(); }
+  numberChapters();
   if (window.Bears) {           // cute animated teddy bears live in bears.js
     try { window.Bears.decorate(); } catch (e) { if (window.console) console.error('Bears failed to load:', e); }
   }

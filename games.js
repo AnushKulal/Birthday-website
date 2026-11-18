@@ -907,7 +907,7 @@
         heart.style.transform = 'scale(' + (1 + level / 350) + ')';
       }
       function loop(t) {
-        var dt = Math.min(0.05, (t - last) / 1000);
+        var dt = Math.min(0.25, (t - last) / 1000);   // real time, so slow phones fill just as fast
         last = t;
         level += holding ? dt * 36 : -dt * 22;
         if (level >= 100) { overflow(); return; }

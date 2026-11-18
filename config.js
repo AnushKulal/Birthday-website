@@ -31,18 +31,28 @@ window.SITE = {
   // After that she has to wait for the countdown. Use null to keep the button forever.
   skipUntil: "2026-11-29T14:00:00+05:30",
 
-  // The day you got together, for the live "days together" counter. Use null to hide it.
-  togetherSince: "2023-02-14",
+  // Your anniversary (the day you proposed), for the live "days together" counter. Use null to hide it.
+  togetherSince: "2024-09-07",
 
 
   /* ---------- 2. The lock screen ---------- */
-  // A question only she can answer. (It's a sweet gate, not real security:
-  // anyone who knows how to view page source could find the answer.)
+  // She picks a date (Day / Month / Year). It's a sweet gate, not real security:
+  // anyone who knows how to view page source could find the answer.
   lock: {
     enabled: true,                            // false = just a "Tap to open" button
-    question: "Where did we go on our first date?",
-    answers: ["coffee shop", "cafe", "starbucks"],  // any of these unlock it (capitals don't matter)
-    hint: "Think warm drinks and nervous smiles ☕",
+    type: "date",                             // "date" = date picker, "text" = typed answer
+    question: "When was our first date?",
+    answer: "2024-09-16",                     // YYYY-MM-DD (16 September 2024)
+    years: [2023, 2024, 2025, 2026],          // years shown in the picker
+    hint: "Think September 2024… a few days after a very special question 💍",
+    // sweet reactions when she picks one of your other special days
+    nearMisses: {
+      "2024-09-07": "That’s the day I proposed 💍 Our first date came nine days later…",
+      "2023-10-03": "That’s when we first chatted 💬 Our first date came a while later!",
+      "2023-10-13": "That’s the day we became besties 💕 Keep going…",
+    },
+    // used only when type is "text"
+    answers: ["museum"],
   },
 
 
@@ -57,7 +67,9 @@ window.SITE = {
 
   /* ---------- 4. Opening screen ---------- */
   hero: {
-    photo: "photos/us.jpg",    // a photo of the two of you (shown in a circle)
+    photo: "photos/first-date.jpg",   // a photo of the two of you (shown in a circle)
+    photoFocus: "52% 34%",            // which part of the photo to centre on (x% y%)
+    photoZoom: 1.55,                  // zoom in a little so your faces fill the circle
     message: "Today the world got a little more beautiful, because it’s the day you came into it. " +
              "This little corner of the internet is my gift to you: our story, our memories, " +
              "and all the reasons I love you.",
@@ -68,34 +80,36 @@ window.SITE = {
   // Add or remove items freely. Photos are optional: use photo: null for none.
   story: [
     {
-      date: "March 2023",
-      title: "The Day We Met",
-      text: "I didn’t know it yet, but my whole life was about to change. You smiled, and somehow everything felt a little brighter.",
-      photo: "photos/story-1.jpg",
+      date: "3 October 2023",
+      title: "Our First Chat",
+      text: "One message, and somehow I couldn’t stop smiling at my phone. I had no idea how much it would change.",
+      photo: null,                     // ← add a photo later if you like
     },
     {
-      date: "April 2023",
+      date: "13 October 2023",
+      title: "Besties",
+      text: "Just ten days later, you were my bestie. My favourite person to talk to, about everything and nothing.",
+      photo: null,
+    },
+    {
+      date: "7 September 2024",
+      title: "The Day I Asked",
+      text: "I asked you to be mine, and you said yes. The best yes of my life, and the day our anniversary begins.",
+      photo: null,
+    },
+    {
+      date: "16 September 2024",
       title: "Our First Date",
-      text: "I was so nervous I barely touched my food. You laughed at my terrible jokes anyway, and that’s when I knew you were special.",
-      photo: "photos/story-2.jpg",
-    },
-    {
-      date: "August 2023",
-      title: "Our First Trip",
-      text: "New places, late nights and getting a little lost together. Every adventure is better with you beside me.",
-      photo: "photos/story-3.jpg",
-    },
-    {
-      date: "Some ordinary Tuesday",
-      title: "The Day I Knew",
-      text: "There was no big moment. Just you, being you. And I realised I never want to be anywhere else.",
-      photo: "photos/story-4.jpg",
+      text: "A museum full of beautiful old things, and I only had eyes for you. Flowers, nervous smiles and the happiest day.",
+      photo: "photos/first-date.jpg",
+      photoFocus: "52% 40%",
     },
     {
       date: "Today",
       title: "Your Birthday",
       text: "Another year of you in this world, and another year of me getting to love you. Lucky, lucky me.",
-      photo: "photos/story-5.jpg",
+      photo: "photos/zoo-4.jpg",
+      photoFocus: "50% 40%",
     },
   ],
 
@@ -103,18 +117,18 @@ window.SITE = {
   /* ---------- 6. Photo gallery ---------- */
   // Add as many as you like. Tapping a photo opens it full screen.
   gallery: [
-    { photo: "photos/gallery-1.jpg",  caption: "That smile ❤" },
-    { photo: "photos/gallery-2.jpg",  caption: "Our first selfie" },
-    { photo: "photos/gallery-3.jpg",  caption: "Best trip ever" },
-    { photo: "photos/gallery-4.jpg",  caption: "My favourite view" },
-    { photo: "photos/gallery-5.jpg",  caption: "Being silly" },
-    { photo: "photos/gallery-6.jpg",  caption: "Lazy Sundays" },
-    { photo: "photos/gallery-7.jpg",  caption: "Date night" },
-    { photo: "photos/gallery-8.jpg",  caption: "You, being adorable" },
-    { photo: "photos/gallery-9.jpg",  caption: "Little adventures" },
-    { photo: "photos/gallery-10.jpg", caption: "Golden hour" },
-    { photo: "photos/gallery-11.jpg", caption: "Always laughing" },
-    { photo: "photos/gallery-12.jpg", caption: "Us, forever" },
+    { photo: "photos/first-date.jpg",  caption: "Our first date 💐",          focus: "52% 40%" },
+    { photo: "photos/first-date-2.jpg", caption: "That smile, that day 🌸",   focus: "50% 45%" },
+    { photo: "photos/map-date.jpg",    caption: "Art lovers at MAP 🎨",        focus: "50% 30%" },
+    { photo: "photos/map-date-2.jpg",  caption: "Our own masterpiece 🖼️",      focus: "50% 55%" },
+    { photo: "photos/movie-date.jpg",  caption: "Movie night glow 🎬" },
+    { photo: "photos/movie-date-2.jpg", caption: "Peace, love & popcorn ✌️",  focus: "40% 50%" },
+    { photo: "photos/dinner-date.jpg", caption: "Candlelight at Hellen’s 🕯️" },
+    { photo: "photos/zoo-1.jpg",       caption: "That look ❤" },
+    { photo: "photos/zoo-2.jpg",       caption: "Found a bigger teddy 🐻",     focus: "50% 70%" },
+    { photo: "photos/zoo-3.jpg",       caption: "Monkeying around 🐒" },
+    { photo: "photos/zoo-4.jpg",       caption: "Cool kids 😎" },
+    { photo: "photos/zoo-5.jpg",       caption: "Adventure mode 🌿" },
   ],
 
 
@@ -168,19 +182,144 @@ window.SITE = {
   },
 
 
+  /* ---------- 9b. Our dates (a little scrapbook of every date) ---------- */
+  // Add each date you go on. "category" groups them (Museum, Movie, Café, Beach…).
+  dates: [
+    {
+      title: "The Museum Date",
+      date: "16 September 2024",
+      category: "Museum",
+      emoji: "🏛️",
+      photos: [
+        { src: "photos/first-date.jpg", focus: "52% 38%" },
+        { src: "photos/first-date-2.jpg", focus: "50% 45%" },
+      ],
+      note: "Our very first date. A whole museum of beautiful old things, and you were still the most beautiful thing there.",
+      first: true,
+    },
+    {
+      title: "The Art Museum Date",
+      date: "1 July 2025",
+      category: "Museum",
+      emoji: "🎨",
+      place: "Museum of Art & Photography (MAP)",
+      photos: [
+        { src: "photos/map-date.jpg", focus: "50% 40%" },
+        { src: "photos/map-date-2.jpg", focus: "50% 55%" },
+      ],
+      note: "Walls full of paintings and photographs, and I still couldn’t stop looking at you. My favourite work of art was standing right beside me.",
+    },
+    {
+      title: "The Movie Date",
+      date: "18 August 2026",
+      category: "Movie",
+      emoji: "🎬",
+      place: "Watching Awarapan 2",
+      photos: [
+        { src: "photos/movie-date.jpg", focus: "50% 46%" },
+        { src: "photos/movie-date-2.jpg", focus: "40% 50%" },
+      ],
+      note: "Blue cinema lights, a love story on the big screen, and my favourite love story sitting right next to me.",
+    },
+    {
+      title: "Date Night",
+      date: "6 September 2026",
+      category: "Dinner",
+      emoji: "🕯️",
+      place: "Hellen’s Place",
+      photo: "photos/dinner-date.jpg",
+      photoFocus: "50% 45%",
+      note: "The night before our second anniversary: candlelight, flowers on the table and you across from me. Two years in, and you still give me butterflies.",
+    },
+    {
+      title: "The Zoo Date",
+      date: "4 October 2026",
+      category: "Zoo",
+      emoji: "🐒",
+      place: "Bannerghatta Zoo",
+      // several photos: she can tap through them on the card
+      photos: [
+        { src: "photos/zoo-2.jpg", focus: "50% 70%" },
+        { src: "photos/zoo-1.jpg", focus: "55% 45%" },
+        { src: "photos/zoo-3.jpg", focus: "50% 45%" },
+        { src: "photos/zoo-4.jpg", focus: "50% 40%" },
+        { src: "photos/zoo-5.jpg", focus: "50% 50%" },
+      ],
+      note: "Bears, monkeys and a whole zoo full of animals, and you were still the cutest one there. We even found a teddy bigger than ours. 🐻",
+    },
+  ],
+  // {next} becomes the next date's number
+  nextDate: "Date No. {next} is loading… I’m already planning it 😉",
+
+
+  /* ---------- 9c. Little names I call you ---------- */
+  // ✍️ {her} becomes her name and {me} yours.
+  nicknames: {
+    title: "Little Names I Call You",
+    sound: true,                       // cute little sounds when she taps them (false = silent)
+    beluga: {
+      name: "Beluga",
+      caption: "Once upon a time, you were my Beluga, and you’ll always be my favourite one in the whole ocean.",
+      messages: [
+        "Hi, my Beluga! 💙",
+        "Of all the fish in the sea (yes, I know belugas are whales), I’d still pick you.",
+        "Belugas are the happiest whales. You make me the happiest human.",
+        "Blub blub! That’s beluga for ‘I missed you’.",
+        "Once upon a time you were my Beluga. You still are, and you always will be.",
+        "The whole ocean isn’t as deep as how much I love you.",
+      ],
+      // what the little beluga says when she catches it swimming across the page
+      buddyMessages: [
+        "Blub blub! Found you, Beluga 💙",
+        "Just swimming by to say I love you 🫧",
+        "Happy birthday from the whole ocean! 🌊",
+        "Keep exploring, there’s more love ahead 💕",
+      ],
+      swimAcross: true,
+    },
+    sweet: {
+      name: "Kaju Katli",
+      caption: "My favourite sweet in any box, and the sweetest thing in my life. Take a bite of each piece.",
+      messages: [
+        "You’re sweeter than every mithai in the shop.",
+        "Silver on the outside, softest heart on the inside. Just like you.",
+        "One smile from you is sweeter than a whole box of these.",
+        "If you were a sweet, I’d never share you. Not even at Diwali.",
+        "Birthdays, Diwali, ordinary Tuesdays: you make every day a celebration.",
+        "I’d give you the last piece of kaju katli. That’s how I know it’s true love.",
+        "Rare, precious and impossible to resist: my Kaju Katli.",
+        "Nothing in any sweet shop comes close to you.",
+      ],
+      final: "Even a whole box of kaju katli isn’t as sweet as you, my Kaju Katli. ❤",
+    },
+    donkey: {
+      name: "Little Donkey",
+      caption: "And sometimes, my silly little donkey: the cutest, kindest, smartest little donkey in the whole world.",
+      messages: [
+        "Hee-haw! (That’s donkey for ‘I love you’.)",
+        "Hee-haw-ppy Birthday, {her}! 🎂",
+        "Stubborn? A little. Adorable? Always.",
+        "The cutest little donkey in the world, and she’s all mine.",
+        "Every donkey deserves carrots and cuddles. You get both. 🥕",
+        "Silly sometimes, sweet always. My favourite little donkey.",
+      ],
+    },
+  },
+
+
   /* ---------- 10. "How well do you know us?" quiz ---------- */
   // ✍️ These are examples: change the questions and answers to real ones about you two.
   // "answer" is the position of the right option: 0 = first, 1 = second, 2 = third, 3 = fourth.
   quiz: {
     questions: [
-      { question: "Where did we go on our first date?",
-        options: ["A coffee shop", "The beach", "The movies", "A long drive"], answer: 0 },
+      { question: "When did we first chat?",
+        options: ["3 October 2023", "13 October 2023", "7 September 2024", "16 September 2024"], answer: 0 },
       { question: "What do I love most about you?",
         options: ["Your smile", "Your laugh", "Your kindness", "Everything. Obviously."], answer: 3 },
       { question: "Who fell in love first?",
         options: ["You", "Me", "Same moment", "Still debating"], answer: 1 },
-      { question: "What's my idea of a perfect evening?",
-        options: ["A big party", "Gaming all night", "A quiet dinner with you", "Working late"], answer: 2 },
+      { question: "How many days after I proposed did we go on our first date?",
+        options: ["3 days", "9 days", "16 days", "A month"], answer: 1 },
       { question: "How much do I love you?",
         options: ["A little", "A lot", "More than food", "More than all the stars"], answer: 3 },
     ],
