@@ -67,9 +67,9 @@ window.SITE = {
 
   /* ---------- 4. Opening screen ---------- */
   hero: {
-    photo: "photos/first-date.jpg",   // a photo of the two of you (shown in a circle)
-    photoFocus: "52% 34%",            // which part of the photo to centre on (x% y%)
-    photoZoom: 1.55,                  // zoom in a little so your faces fill the circle
+    photo: "photos/kajal.jpg",        // Kajal's photo, shown in the circle (already cropped square)
+    photoFocus: "50% 50%",            // which part of the photo to centre on (x% y%)
+    photoZoom: 1,                     // 1 = no extra zoom
     message: "Today the world got a little more beautiful, because it’s the day you came into it. " +
              "This little corner of the internet is my gift to you: our story, our memories, " +
              "and all the reasons I love you.",
