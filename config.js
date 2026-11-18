@@ -44,7 +44,7 @@ window.SITE = {
     question: "When was our first date?",
     answer: "2024-09-16",                     // YYYY-MM-DD (16 September 2024)
     years: [2023, 2024, 2025, 2026],          // years shown in the picker
-    hint: "Think September 2024… a few days after a very special question 💍",
+    hint: "September 2024: flowers, nervous smiles and a whole science museum 🔬",
     // sweet reactions when she picks one of your other special days
     nearMisses: {
       "2024-09-07": "That’s the day I proposed 💍 Our first date came nine days later…",
@@ -100,7 +100,7 @@ window.SITE = {
     {
       date: "16 September 2024",
       title: "Our First Date",
-      text: "A museum full of beautiful old things, and I only had eyes for you. Flowers, nervous smiles and the happiest day.",
+      text: "Flowers, nervous smiles and a whole science museum to explore at Visvesvaraya. I don’t remember a single invention. I only remember you.",
       photo: "photos/first-date.jpg",
       photoFocus: "52% 40%",
     },
@@ -190,11 +190,12 @@ window.SITE = {
       date: "16 September 2024",
       category: "Museum",
       emoji: "🏛️",
+      place: "Visvesvaraya Industrial & Technological Museum",
       photos: [
         { src: "photos/first-date.jpg", focus: "52% 38%" },
         { src: "photos/first-date-2.jpg", focus: "50% 45%" },
       ],
-      note: "Our very first date. A whole museum of beautiful old things, and you were still the most beautiful thing there.",
+      note: "Our very first date. A whole museum of engines, inventions and science, and the best chemistry in the building was ours. My greatest discovery that day? You. 🔬",
       first: true,
     },
     {
