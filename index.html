@@ -174,11 +174,23 @@
       </div>
     </section>
 
+    <!-- ============ MINI GAMES ============ -->
+    <section id="games" class="chapter">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="script kicker">Chapter five</p>
+          <h2>Play With Me</h2>
+          <p class="sub">Little games, each with a little surprise at the end.</p>
+        </header>
+        <div class="games-grid" id="games-grid"></div>
+      </div>
+    </section>
+
     <!-- ============ MAKE A WISH ============ -->
     <section id="wish" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter five</p>
+          <p class="script kicker">Chapter six</p>
           <h2>Make a Wish</h2>
           <p class="sub">Close your eyes, make a wish, then blow out the candles.</p>
         </header>
@@ -205,7 +217,7 @@
     <section id="coupons" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter six</p>
+          <p class="script kicker">Chapter seven</p>
           <h2>Love Coupons</h2>
           <p class="sub" id="coupons-sub">Yours to use whenever you like. Tap one to redeem it.</p>
         </header>
@@ -217,7 +229,7 @@
     <section id="open-when" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter seven</p>
+          <p class="script kicker">Chapter eight</p>
           <h2>Open When…</h2>
           <p class="sub">Little letters for the days you need them. Maybe save a few for later.</p>
         </header>
@@ -229,7 +241,7 @@
     <section id="letter" class="chapter">
       <div class="container">
         <header class="section-head reveal">
-          <p class="script kicker">Chapter eight</p>
+          <p class="script kicker">Chapter nine</p>
           <h2>A Letter for You</h2>
           <p class="sub">Some things are better said slowly.</p>
         </header>
@@ -300,6 +312,28 @@
   <div class="now-playing" id="now-playing" aria-hidden="true"></div>
   <audio id="music" loop preload="none"></audio>
 
+  <!-- Mini game window -->
+  <div class="game-modal" id="game-modal" role="dialog" aria-modal="true" aria-labelledby="game-title" hidden>
+    <div class="game-sheet">
+      <header class="game-head">
+        <h3 class="game-title" id="game-title"></h3>
+        <button class="game-close" id="game-close" type="button" aria-label="Close the game">✕</button>
+      </header>
+      <p class="game-help" id="game-help"></p>
+      <div class="game-stage">
+        <div class="game-area" id="game-area"></div>
+        <div class="game-win" id="game-win" hidden>
+          <p class="script game-win-kicker">You did it!</p>
+          <p class="game-win-msg" id="game-win-msg"></p>
+          <div class="game-win-actions">
+            <button type="button" class="btn" id="game-again">Play again</button>
+            <button type="button" class="link-btn" id="game-done">Back to the games</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- "Open when" letter viewer -->
   <div class="ow-modal" id="ow-modal" role="dialog" aria-modal="true" aria-labelledby="ow-modal-title" hidden>
     <article class="ow-letter" id="ow-letter">
@@ -323,6 +357,7 @@
 
   <script src="vendor/confetti.browser.js"></script>
   <script src="config.js"></script>
+  <script src="games.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

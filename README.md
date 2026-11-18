@@ -6,25 +6,35 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 
 | Section | What she experiences |
 |---|---|
-| **Countdown** | Before her birthday, a live countdown to midnight (her phone's local time) |
-| **Lock screen** | A question only she can answer; wrong answers get a cute nudge and a hint |
-| **Opening** | "Happy Birthday" with confetti, your photo together, and music starting |
+| **Countdown** | Before her birthday, a live countdown to midnight (her phone's local time), with an optional skip button |
+| **Lock screen** | A heart draws itself; she answers a question only she knows. Wrong answers get a cute nudge and a hint |
+| **Opening** | Hearts drift down, "Happy Birthday" writes itself in, her name fades in, and music starts |
 | **Our Story** | A live "days together" counter and a timeline of your milestones |
 | **Gallery** | Polaroid-style photos; tap one to view it full screen (swipe between them) |
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
+| **How Well Do You Know Us?** | A 5-question quiz with cute reactions and a final score |
+| **Play With Me** | 7 mini games: Match Our Moments, Catch My Love, Scratch & See, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
 | **Make a Wish** | A cake whose candles she blows out by tapping, or by blowing into her mic |
+| **Love Coupons** | Tickets she can redeem (a stamp lands on them; her phone remembers) |
+| **Open When…** | Little letters for different moments: when she misses you, can't sleep, and more |
 | **Love Letter** | An envelope that opens, then your letter types itself out |
 | **Final Surprise** | A gift box that bursts open to reveal her real present or plan |
+
+Rose petals drift across the whole site, and tapping anywhere releases a little heart.
 
 ## 1. Personalise it (edit `config.js`)
 
 Open `config.js` in any text editor (VS Code, Notepad, TextEdit) and change:
 
 - `herName`, `yourName`, `age`
-- `birthday`: **midnight at the start of her birthday**, e.g. `"2026-12-01T00:00:00"`
+- `birthday`: **midnight at the start of her birthday**, e.g. `"2026-11-30T00:00:00"`
+- `allowSkip`: `false` hides the countdown's skip button, so she has to wait until midnight
 - `togetherSince`: the day you got together
 - `lock`: the question, accepted answers and a hint
 - `story`, `gallery`, `reasons`, `letter`, `surprise`: the words
+- `quiz`: questions about you two (and which option is the right answer)
+- `coupons`, `openWhen`: the coupons and the little letters
+- `games`: the messages each game reveals (in game text, `{her}` becomes her name and `{me}` yours)
 
 **Rewrite the letter in your own words.** The sample is only a starting point.
 

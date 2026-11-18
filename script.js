@@ -139,7 +139,7 @@
     var shades = ['#FF7EB3', '#E0457B', '#C59CF5', '#F48FB1'];
     document.addEventListener('pointerdown', function (e) {
       if (!document.body.classList.contains('unlocked')) return;
-      if (e.target.closest && e.target.closest('button, a, input, .lightbox, .ow-modal')) return;
+      if (e.target.closest && e.target.closest('button, a, input, canvas, .lightbox, .ow-modal, .game-modal')) return;
       var h = el('span', 'tap-heart');
       h.style.left = e.clientX + 'px';
       h.style.top = e.clientY + 'px';
@@ -234,6 +234,7 @@
     if (PREVIEW) {
       var badge = el('div', 'preview-badge', 'Preview mode · countdown skipped');
       document.body.appendChild(badge);
+      document.body.classList.add('preview');
     }
     startPetals();   // petals drift over the countdown/lock screen too
     var bday = parseLocal(cfg.birthday);
@@ -956,6 +957,12 @@
   buildOpenWhen();
   buildLetter();
   buildSurprise();
+  if (window.BirthdayGames) {   // mini games live in games.js
+    try {
+      window.BirthdayGames.init({ cfg: cfg, el: el, $: $, reduced: REDUCED, preview: PREVIEW,
+        burst: burst, burstAt: burstAt, celebrate: celebrate, readList: readList, saveList: saveList });
+    } catch (e) { if (window.console) console.error('Games failed to load:', e); }
+  }
   setupReveal();
   start();
 })();

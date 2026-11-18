@@ -238,7 +238,40 @@ window.SITE = {
   ],
 
 
-  /* ---------- 13. The final surprise (gift box) ---------- */
+  /* ---------- 13. Mini games ("Play With Me") ---------- */
+  // ✍️ Change any of the messages. {her} becomes her name, {me} becomes yours.
+  // To hide a game, add  enabled: false  to it.
+  games: {
+    memory: {
+      symbols: ["❤️", "🌹", "💍", "🧸", "🍫", "💌"],      // 3 to 8 pairs
+      message: "Every piece of you matches every piece of me. ❤",
+    },
+    catch: {
+      goal: 20,                                             // hearts needed to win
+      message: "You caught every bit of my love. Don’t worry, there’s plenty more where that came from.",
+    },
+    scratch: {
+      secret: "Your next date is on me: anywhere you choose. ❤",   // ← the hidden secret
+      message: "Now you know my secret. Pick the place! 😉",
+    },
+    stars: {
+      message: "Out of all the stars in the sky, you’re the one I’d wish on.",
+    },
+    balloons: {
+      sentence: "Happy birthday {her}, you make every day of my life brighter",
+      message: "Read that again, slowly. I mean every word. ❤",
+    },
+    meter: {
+      message: "Error: love level too high to measure. ❤",
+    },
+    hunt: {
+      count: 7,                                              // hidden hearts (3 to 8)
+      message: "You found every heart I hid for you, just like you found your way into mine. ❤ {me}",
+    },
+  },
+
+
+  /* ---------- 14. The final surprise (gift box) ---------- */
   // Reveal her real present, a date plan, a trip... anything.
   surprise: {
     teaser: "One more thing…",
