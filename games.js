@@ -25,16 +25,17 @@
     }
 
     var GAMES = [
+      // the gift comes first, so she can't miss it
+      { id: 'scratch', icon: '🎁', title: 'Scratch to Reveal Your Gift',
+        blurb: opt('scratch').revealSong ? 'A little gift is hiding under this card, just for you. Turn your sound on 🔊' : 'A little secret is hiding under this card, just for you.',
+        help: 'Rub the card with your finger (or mouse) until your gift shows.' + (opt('scratch').revealSong ? ' Sound on! 🔊' : ''),
+        mount: mountScratch },
       { id: 'arrow', icon: '🏹', title: 'Cupid’s Arrow', blurb: 'Help my little bear shoot arrows through the floating hearts.',
         help: 'Drag to aim and let go to shoot (a quick tap shoots too). Golden hearts count double.', mount: mountArrow },
       { id: 'memory', icon: '💞', title: 'Match Our Moments', blurb: 'Flip the cards and find every pair.',
         help: 'Tap two cards to turn them over. Find all the matching pairs.', mount: mountMemory },
       { id: 'catch', icon: '🧺', title: 'Catch My Love', blurb: 'Catch the falling hearts, dodge the broken ones.',
         help: 'Drag (or use the arrow keys) to move the basket. Golden hearts are worth 3. Broken hearts take 2 away.', mount: mountCatch },
-      { id: 'scratch', icon: '🎟️', title: 'Scratch & See',
-        blurb: opt('scratch').revealSong ? 'Scratch the card to reveal a secret. Turn your sound on 🔊' : 'Scratch the card to reveal a secret.',
-        help: 'Rub the card with your finger (or mouse) until the secret shows.' + (opt('scratch').revealSong ? ' Sound on! 🔊' : ''),
-        mount: mountScratch },
       { id: 'stars', icon: '✨', title: 'Connect Our Stars', blurb: 'Join the stars in order and see what they draw.',
         help: 'Tap the stars in order, starting from 1.', mount: mountStars },
       { id: 'balloons', icon: '🎈', title: 'Pop the Balloons', blurb: 'Every balloon hides one word of a message.',
@@ -137,6 +138,41 @@
       document.body.style.overflow = '';
       if (lastTile) { try { lastTile.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
     }
+    window.BirthdayGames.open = function (id) {
+      var g = GAMES.filter(function (x) { return x.id === id; })[0];
+      if (g) openGame(g, tiles[id] ? tiles[id].btn : null);
+      return !!g;
+    };
+
+    /* ---------- the gift button on the opening screen opens the scratch card ---------- */
+    var giftBtn = $('#gift-btn'), giftLabel = $('#gift-label');
+    if (giftBtn && tiles.scratch) {
+      var scratchGame = GAMES.filter(function (x) { return x.id === 'scratch'; })[0];
+      var hasSong = function () { return !!(opt('scratch').revealSong && window.BirthdaySong && window.BirthdaySong.available()); };
+      // the same gift, always in reach in the corner, until she has opened it
+      var floatBtn = el('button', 'gift-float');
+      floatBtn.type = 'button';
+      floatBtn.setAttribute('aria-label', 'Your gift: scratch to reveal it');
+      floatBtn.title = 'Your gift: scratch to reveal it';
+      var fIcon = el('span', 'gift-float-icon', '🎁');
+      fIcon.setAttribute('aria-hidden', 'true');
+      floatBtn.appendChild(fIcon);
+      floatBtn.appendChild(el('span', 'gift-float-label', 'Your gift'));
+      document.body.appendChild(floatBtn);
+      var giftText = function () {
+        var opened = hasSong() ? window.BirthdaySong.revealed() : won.indexOf('scratch') !== -1;
+        giftLabel.textContent = opened && won.indexOf('scratch') !== -1 ? 'See your gift again' : 'Scratch to reveal your gift';
+        floatBtn.hidden = opened;       // once she's found the song, the ♫ button sits here instead
+      };
+      giftText();
+      giftBtn.hidden = false;
+      giftBtn.addEventListener('click', function () { openGame(scratchGame, giftBtn); });
+      floatBtn.addEventListener('click', function () { openGame(scratchGame, floatBtn); });
+      document.addEventListener('song:revealed', giftText);
+      $('#game-done').addEventListener('click', giftText);
+      $('#game-close').addEventListener('click', giftText);
+    }
+
     $('#game-close').addEventListener('click', closeGame);
     $('#game-done').addEventListener('click', closeGame);
     againBtn.addEventListener('click', startGame);

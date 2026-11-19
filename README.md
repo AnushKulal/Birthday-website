@@ -10,12 +10,13 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | **Lock screen** | A heart draws itself; she picks your anniversary date (Day / Month / Year): 7 September, any year from 2024. Picking another special day gets a sweet reaction, and a hint appears after a wrong try |
 | **Our Dates** | A scrapbook of every date (Museum, Art museum, Movie, Dinner, Zoo…), with a tally by category and a tap-through photo strip |
 | **Little Names I Call You** | Beluga (a swimming beluga that blows heart bubbles), Kaju Katli (a box of 9 sweets to bite) and Little Donkey (hops and says something sweet). A little beluga also swims across the page now and then |
-| **Opening** | Hearts drift down, "Happy Birthday" writes itself in, her name fades in, and music starts |
+| **Opening** | Hearts drift down, "Happy 22nd Birthday" writes itself in, her name fades in, and a gold **🎁 Scratch to reveal your gift** button appears |
+| **Your gift** | A gold **🎁 Your gift** button waits in the bottom corner on every screen. It opens a scratch card; rubbing it reveals your song ("Kaju — You Feel Like Home"), which starts playing, and the ♫ button takes the gift's place |
 | **Our Story** | A live "days together" counter and a timeline of your milestones |
 | **Gallery** | Polaroid-style photos; tap one to view it full screen (swipe between them) |
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
 | **How Well Do You Know Us?** | A 5-question quiz with cute reactions and a final score |
-| **Play With Me** | 8 mini games: Cupid's Arrow, Match Our Moments, Catch My Love, Scratch & See, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
+| **Play With Me** | 8 mini games: Scratch to Reveal Your Gift (first, in gold), Cupid's Arrow, Match Our Moments, Catch My Love, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
 | **Make a Wish** | A cake whose candles she blows out by tapping, or by blowing into her mic |
 | **Love Coupons** | Tickets she can redeem (a stamp lands on them; her phone remembers) |
 | **Open When…** | Little letters for different moments: when she misses you, can't sleep, and more |
@@ -64,7 +65,7 @@ Tips:
 
 ## 3. Add your song
 
-Put an MP3 in the `music/` folder named **`our-song.mp3`**. It starts when she unlocks the site, loops softly, and she can pause it with the ♫ button. No file means no music button.
+Put the song in the `music/` folder as **`our-song.m4a`** and/or **`our-song.mp3`**. With `music.reveal: "scratch"` (the default here) it stays a surprise: it starts when she scratches her gift card (or opens the love letter), then plays every time she comes back. Use `reveal: "unlock"` to play it right after unlocking instead. No file means no music button, and the scratch card shows the `games.scratch.secret` text instead.
 
 ## 4. Preview it yourself
 
@@ -107,7 +108,7 @@ Alternatives: Vercel, or GitHub Pages.
 - [ ] Decide on the countdown skip button: `allowSkip: false` makes her wait until midnight
 - [ ] The lock answer works; try a few spellings she might type and add them to `answers`
 - [ ] All photos show up (open `?preview` and look for any file names still visible)
-- [ ] The song plays after unlocking
+- [ ] Tap **🎁 Your gift**, scratch the card, and the song plays
 - [ ] Tested on a phone like hers (iPhone vs Android)
 - [ ] Send her the link **without** `?preview` so she gets the countdown and lock screen
 

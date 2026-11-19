@@ -253,6 +253,7 @@
       if (!PREVIEW) storage('bday-song', '1');
       musicBtn.hidden = false;
       if (first || audio.paused) { if (first) audio.currentTime = 0; playMusic(true); }
+      if (first) { try { document.dispatchEvent(new CustomEvent('song:revealed')); } catch (e) { /* very old browser */ } }
       return true;
     },
   };
