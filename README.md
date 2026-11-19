@@ -67,7 +67,9 @@ Tips:
 
 ## 3. Add your song
 
-Put the song in the `music/` folder as **`our-song.m4a`** and/or **`our-song.mp3`**. With `music.reveal: "scratch"` (the default here) it stays a surprise: it starts when she scratches her gift card (or opens the love letter), then plays every time she comes back. Use `reveal: "unlock"` to play it right after unlocking instead. The player shows `music.title`, and under it `music.subtitle` (default: "From Anush, with love 💗"). No file means no music button, and the scratch card shows the `games.scratch.secret` text instead.
+Put the song in the `music/` folder as **`our-song.m4a`** and/or **`our-song.mp3`**. With `music.reveal: "scratch"` (the default here) it stays a surprise: it starts when she scratches her gift card (or opens the love letter), then plays every time she comes back. Use `reveal: "unlock"` to play it right after unlocking instead. The player shows `music.title`, and under it `music.subtitle` (default: "From Anush, with love 💗").
+
+**Lyrics that scroll with the song:** the words are in `music.lyrics`, each with the time its line starts. They only appear once every line has a time. To set the times, open the site with **`?sync`** at the end of the link (e.g. `https://kajal-and-anush.vercel.app/?sync`), press Start, and tap the big button (or the space bar) the moment each line begins; tap "♪ Music only" where nobody sings. At the end, copy the timings into `music.lyrics`. In the player, the line being sung glows in the middle, tapping a line plays from there, and the lyrics button shows or hides them. No file means no music button, and the scratch card shows the `games.scratch.secret` text instead.
 
 ## 4. Preview it yourself
 

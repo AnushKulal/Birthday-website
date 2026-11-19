@@ -8,7 +8,8 @@
   var cfg = window.SITE || {};
   var $ = function (sel) { return document.querySelector(sel); };
   var params = new URLSearchParams(location.search);
-  var PREVIEW = params.has('preview');   // ?preview skips the countdown & shows photo file names
+  var SYNC = params.has('sync');        // ?sync opens the lyrics timing helper (and works like ?preview)
+  var PREVIEW = params.has('preview') || SYNC;   // ?preview skips the countdown & shows photo file names
   var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- helpers ---------- */
@@ -220,8 +221,12 @@
     musicBtn.classList.toggle('playing', on);
     if (ring) ring.style.strokeDashoffset = String(100 - (d ? Math.min(100, t / d * 100) : 0));
     if (dock) dock.classList.toggle('playing', on);
-    players = players.filter(function (p) { return p.root.isConnected; });
-    players.forEach(function (p) { p.update(on, t, d); });
+    // forget players that were on the page and have been taken off it (not ones still being built)
+    players = players.filter(function (p) {
+      if (p.root.isConnected) { p.shown = true; return true; }
+      return !p.shown;
+    });
+    players.forEach(function (p) { if (p.root.isConnected) p.update(on, t, d); });
   }
   var raf = 0;
   function tick() { refreshPlayers(); raf = isPlaying() ? requestAnimationFrame(tick) : 0; }
@@ -232,8 +237,67 @@
     });
   });
 
+  /* ---------- lyrics: they scroll with the song, the line being sung glows; tap one to jump there ---------- */
+  function parseTime(v) {
+    if (typeof v === 'number') return v;
+    var m = /^(\d+):(\d+(?:\.\d+)?)$/.exec(String(v || '').trim());
+    return m ? +m[1] * 60 + +m[2] : NaN;
+  }
+  var LYRICS = (function () {           // only when every line has a time; otherwise no lyrics at all
+    var list = (cfg.music && cfg.music.lyrics) || [];
+    var out = list.map(function (l) { return { t: parseTime(l[0]), text: String(l[1] || '') }; });
+    if (!out.length || out.some(function (l) { return !isFinite(l.t); })) return null;
+    return out.sort(function (a, b) { return a.t - b.t; });
+  })();
+  function makeLyrics(list) {
+    list = list || LYRICS;
+    if (!list || !list.length) return null;
+    var items = list[0].t > 1 ? [{ t: 0, text: '♪' }].concat(list) : list.slice();   // music before the first line
+    var box = el('div', 'lyrics');
+    box.setAttribute('role', 'region');
+    box.setAttribute('aria-label', 'Lyrics');
+    var track = el('div', 'lyrics-track');
+    var lines = items.map(function (l) {
+      var music = /^\s*♪/.test(l.text);
+      var p = el('p', 'lyric' + (music ? ' lyric-music' : ''), music ? '♪ ♪ ♪' : l.text);
+      p.title = 'Play from here';
+      p.addEventListener('click', function () {
+        try { audio.currentTime = l.t; } catch (e) { /* not ready */ }
+        if (!isPlaying()) playMusic(false);
+        refreshPlayers();
+      });
+      track.appendChild(p);
+      return p;
+    });
+    box.appendChild(track);
+    var cur = -1, lastH = -1;
+    players.push({
+      root: box,
+      update: function (on, t) {
+        var i = 0;
+        for (var k = 0; k < items.length; k++) if (items[k].t <= t + 0.08) i = k;
+        var h = box.clientHeight;
+        if (i === cur && h === lastH && !box.scrollTop) return;
+        if (i !== cur) {
+          lines.forEach(function (p, k) { p.classList.toggle('past', k < i); p.classList.toggle('now', k === i); });
+          cur = i;
+        }
+        if (box.scrollTop) box.scrollTop = 0;   // only the song moves the lyrics
+        var justShown = lastH <= 0;
+        lastH = h;
+        if (!h) return;                   // hidden: place it when it shows
+        var p = lines[i];
+        if (justShown) track.style.transition = 'none';          // just opened: go straight to the line, no glide
+        track.style.transform = 'translateY(' + (h / 2 - (p.offsetTop + p.offsetHeight / 2)).toFixed(1) + 'px)';
+        if (justShown) { void track.offsetHeight; track.style.transition = ''; }
+      },
+    });
+    return box;
+  }
+
   // a player: play / pause, a bar she can tap or drag to jump anywhere in the song, and the time
-  function makePlayer(extra) {
+  // (opts.lyrics: with the scrolling lyrics above it)
+  function makePlayer(extra, opts) {
     var root = el('div', 'player' + (extra ? ' ' + extra : ''));
     var toggle = el('button', 'player-toggle');
     toggle.type = 'button';
@@ -333,6 +397,13 @@
     };
     players.push(p);
     p.update(isPlaying(), audio.currentTime || 0, songLength());
+    if (opts && opts.lyrics && LYRICS) {
+      var wrap = el('div', 'player-with-lyrics');
+      wrap.appendChild(makeLyrics());
+      wrap.appendChild(root);
+      refreshPlayers();
+      return wrap;
+    }
     return root;
   }
 
@@ -369,8 +440,31 @@
     });
     head.appendChild(cover);
     head.appendChild(meta);
+    var lyr = makeLyrics();
+    if (lyr) {
+      head.classList.add('has-lyrics');
+      var lb = el('button', 'player-lyrics-btn');
+      lb.type = 'button';
+      lb.title = 'Show or hide the lyrics';
+      lb.setAttribute('aria-label', 'Lyrics');
+      lb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v2H4zM4 10.5h11v2H4zM4 15.5h7v2H4z"/><path d="M18.5 12v5.1a2.4 2.4 0 1 0 1.5 2.2V14h2v-2z"/></svg>';
+      var showLyrics = function (on) {
+        lyr.hidden = !on;
+        lb.setAttribute('aria-pressed', on ? 'true' : 'false');
+        dockHeight();
+        refreshPlayers();
+      };
+      lb.addEventListener('click', function () {
+        var on = lyr.hidden;
+        storage('bday-lyrics', on ? '1' : '0');
+        showLyrics(on);
+      });
+      head.appendChild(lb);
+      showLyrics(storage('bday-lyrics') !== '0');
+    }
     head.appendChild(min);
     dock.appendChild(head);
+    if (lyr) dock.appendChild(lyr);
     dock.appendChild(makePlayer('in-dock'));
     document.body.appendChild(dock);
     window.addEventListener('resize', dockHeight);
@@ -433,6 +527,10 @@
     title: function () { return (cfg.music && cfg.music.title) || 'Our Song'; },
     revealed: function () { return !songHidden; },
     makePlayer: makePlayer,
+    // for the lyrics timing helper (?sync)
+    play: function () { playMusic(false); },
+    lyricLines: function () { return ((cfg.music && cfg.music.lyrics) || []).map(function (l) { return String(l[1] || ''); }); },
+    makeLyrics: makeLyrics,
     // pause the song while something else plays (the birthday video), then carry on from the same spot
     hold: function (on) {
       if (on) {
@@ -1489,4 +1587,9 @@
   }
   setupReveal();
   start();
+  if (SYNC) {                   // ?sync: the lyrics timing helper (lyrics-sync.js), only loaded when asked for
+    var helper = document.createElement('script');
+    helper.src = 'lyrics-sync.js';
+    document.body.appendChild(helper);
+  }
 })();

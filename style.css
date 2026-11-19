@@ -3002,6 +3002,78 @@ body.player-open .hunt-intro { bottom: calc(max(16px, env(safe-area-inset-bottom
   body.player-open .hunt-intro { bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--dock-h, 120px) + 64px); }
 }
 
+/* ---------- lyrics: the line being sung glows in the middle, the others fade above and below ---------- */
+.lyrics {
+  position: relative;
+  height: calc(3 * (1.4em + 8px));     /* three lines: the one before, now, and next */
+  overflow: hidden;
+  overflow: clip;                      /* never scrolled by the browser itself: the song moves it */
+  font-size: .95rem;
+  text-align: center;
+  -webkit-mask: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+          mask: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+.lyrics[hidden] { display: none; }
+.lyrics-track { position: relative; transition: transform .7s cubic-bezier(.2, .8, .2, 1); }
+.lyric {
+  margin: 0;
+  padding: 4px 8px;
+  font-family: var(--font-serif);
+  line-height: 1.4;
+  color: rgba(74, 44, 53, .42);
+  text-wrap: balance;
+  cursor: pointer;
+  transition: color .5s ease, scale .5s ease, opacity .5s ease;
+}
+.lyric:hover { color: rgba(122, 31, 61, .7); }
+.lyric.past { opacity: .7; }
+.lyric.now { color: var(--rose-deep); font-weight: 700; scale: 1.05; text-shadow: 0 0 14px rgba(255, 158, 196, .8); }
+.lyric-music { letter-spacing: .35em; }
+.player-dock .lyrics { margin: 0 0 8px; }
+.player-with-lyrics { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.player-with-lyrics .lyrics { font-size: 1rem; }
+.player-head.has-lyrics { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.player-lyrics-btn {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(224, 69, 123, .08);
+  color: rgba(122, 31, 61, .55);
+  cursor: pointer;
+}
+.player-lyrics-btn[aria-pressed="true"] { background: var(--grad-romance); color: #fff; }
+.player-lyrics-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* ---------- ?sync: the lyrics timing helper ---------- */
+.sync {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  background: var(--grad-sky);
+}
+.sync-card { display: flex; flex-direction: column; gap: 14px; width: min(100%, 30rem); margin: 0 auto; padding: 22px 20px; border-radius: 24px; background: rgba(255, 255, 255, .94); box-shadow: var(--shadow-lg); }
+.sync-title { margin: 0; font-size: 1.5rem; }
+.sync-help { margin: 0; font-size: .88rem; line-height: 1.55; color: var(--muted); }
+.sync-now { display: flex; flex-direction: column; gap: 4px; min-height: 8.5rem; padding: 14px 16px; border-radius: 18px; background: linear-gradient(160deg, #FFF4F8, #F6EEFF); text-align: center; }
+.sync-label { font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--magenta); }
+.sync-line { margin: 0; font-family: var(--font-serif); font-size: 1.25rem; font-weight: 700; line-height: 1.35; color: var(--rose-deep); text-wrap: balance; }
+.sync-after { margin: 0; font-size: .82rem; color: var(--muted); }
+.sync-tap { width: 100%; min-height: 64px; font-size: 1.1rem; }
+.sync-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; }
+.sync-count { margin: 0; text-align: center; font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sync-done { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 6px; border-top: 1px dashed rgba(176, 58, 91, .25); }
+.sync-done-title { margin: 0; font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--rose-deep); }
+.sync-preview { width: 100%; }
+.sync-out { width: 100%; padding: 10px; border: 1px solid rgba(176, 58, 91, .25); border-radius: 12px; font: .78rem/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: #FFFBFD; resize: vertical; }
+.sync-note { margin: 0; font-size: .8rem; color: var(--muted); text-align: center; }
+
 /* the player on the gift's "You did it!" screen */
 .game-win-extra { width: min(20rem, 100%); margin: 2px 0 14px; padding: 12px 14px 8px; border-radius: 18px; background: #fff; box-shadow: 0 6px 18px rgba(224, 69, 123, .14); }
 

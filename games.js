@@ -769,7 +769,7 @@
         ctx.burstAt(card);
         if (song) window.BirthdaySong.reveal();      // the song starts as the secret appears
         timer = setTimeout(function () {
-          if (song) api.win(o.songMessage || 'That’s your song. Made just for you. 💗', window.BirthdaySong.makePlayer('in-win'));
+          if (song) api.win(o.songMessage || 'That’s your song. Made just for you. 💗', window.BirthdaySong.makePlayer('in-win', { lyrics: true }));
           else api.win(o.message || 'Now you know my secret. 😉');
         }, song ? 4200 : 1600);
       }
