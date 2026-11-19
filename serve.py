@@ -33,7 +33,57 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         # always send the latest files, so edits to config.js show up on refresh
         self.send_header("Cache-Control", "no-store")
+        # lets the music player jump to any point in the song (iPhones need this to play it at all)
+        self.send_header("Accept-Ranges", "bytes")
         super().end_headers()
+
+    def send_head(self):
+        """Serve just part of a file when the browser asks for a range (used for the song)."""
+        rng = self.headers.get("Range", "")
+        path = self.translate_path(self.path)
+        if not rng.startswith("bytes=") or os.path.isdir(path):
+            return super().send_head()
+        try:
+            f = open(path, "rb")
+        except OSError:
+            self.send_error(404, "File not found")
+            return None
+        size = os.fstat(f.fileno()).st_size
+        try:
+            first, last = rng[6:].split(",")[0].strip().split("-")
+            if first == "":                      # "the last N bytes"
+                start, end = max(0, size - int(last)), size - 1
+            else:
+                start = int(first)
+                end = min(int(last), size - 1) if last else size - 1
+            if start > end or start >= size:
+                raise ValueError
+        except ValueError:
+            f.close()
+            self.send_response(416)
+            self.send_header("Content-Range", "bytes */%d" % size)
+            self.end_headers()
+            return None
+        self.send_response(206)
+        self.send_header("Content-Type", self.guess_type(path))
+        self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, size))
+        self.send_header("Content-Length", str(end - start + 1))
+        self.end_headers()
+        f.seek(start)
+        self._range_left = end - start + 1
+        return f
+
+    def copyfile(self, source, outputfile):
+        left = getattr(self, "_range_left", None)
+        if left is None:
+            return super().copyfile(source, outputfile)
+        self._range_left = None
+        while left > 0:
+            chunk = source.read(min(64 * 1024, left))
+            if not chunk:
+                break
+            outputfile.write(chunk)
+            left -= len(chunk)
 
     def log_message(self, fmt, *args):
         # only mention page opens, not every image/script request

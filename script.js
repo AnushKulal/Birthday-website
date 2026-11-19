@@ -202,31 +202,216 @@
   var songHidden = !!(cfg.music && cfg.music.reveal === 'scratch');
   if (songHidden && !PREVIEW && storage('bday-song') === '1') songHidden = false;   // already revealed on this phone
 
-  function setPlaying(on) {
-    musicBtn.classList.toggle('playing', on);
-    musicBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    musicBtn.setAttribute('aria-label', on ? 'Pause music' : 'Play our song');
+  var ICON_PLAY = '<svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.7-6.8c.6-.4.6-1.3 0-1.7L9.6 4.3C8.9 3.9 8 4.4 8 5.2z"/></svg>';
+  var ICON_PAUSE = '<svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.5" width="4.2" height="15" rx="1.3"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.3"/></svg>';
+  var players = [];      // every player on the page shows the same song, kept in step
+  var dock = null;       // the floating player
+  var ring = musicBtn.querySelector('.music-ring circle');   // how far into the song, around the round ♫ button
+
+  function isPlaying() { return !audio.paused && !audio.muted && !audio.ended; }
+  function songLength() { return isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0; }
+  function fmtTime(sec) {
+    sec = Math.max(0, Math.floor(isFinite(sec) ? sec : 0));
+    return Math.floor(sec / 60) + ':' + ('0' + (sec % 60)).slice(-2);
   }
+  function refreshPlayers() {
+    var on = isPlaying(), d = songLength(), t = audio.currentTime || 0;
+    musicBtn.classList.toggle('playing', on);
+    if (ring) ring.style.strokeDashoffset = String(100 - (d ? Math.min(100, t / d * 100) : 0));
+    if (dock) dock.classList.toggle('playing', on);
+    players = players.filter(function (p) { return p.root.isConnected; });
+    players.forEach(function (p) { p.update(on, t, d); });
+  }
+  var raf = 0;
+  function tick() { refreshPlayers(); raf = isPlaying() ? requestAnimationFrame(tick) : 0; }
+  ['play', 'playing', 'pause', 'seeked', 'seeking', 'durationchange', 'loadedmetadata', 'timeupdate', 'volumechange', 'ended'].forEach(function (ev) {
+    audio.addEventListener(ev, function () {
+      refreshPlayers();
+      if (!raf && isPlaying()) raf = requestAnimationFrame(tick);
+    });
+  });
+
+  // a player: play / pause, a bar she can tap or drag to jump anywhere in the song, and the time
+  function makePlayer(extra) {
+    var root = el('div', 'player' + (extra ? ' ' + extra : ''));
+    var toggle = el('button', 'player-toggle');
+    toggle.type = 'button';
+    toggle.innerHTML = ICON_PLAY + ICON_PAUSE;
+    var side = el('div', 'player-side');
+    var bar = el('div', 'player-bar');
+    bar.tabIndex = 0;
+    bar.setAttribute('role', 'slider');
+    bar.setAttribute('aria-label', 'Song position');
+    bar.setAttribute('aria-valuemin', '0');
+    var track = el('div', 'player-track');
+    track.appendChild(el('div', 'player-fill'));
+    track.appendChild(el('div', 'player-thumb'));
+    bar.appendChild(track);
+    var times = el('div', 'player-times');
+    var cur = el('span', 'player-cur', '0:00');
+    var dur = el('span', 'player-dur', '-:--');
+    times.appendChild(cur);
+    times.appendChild(dur);
+    side.appendChild(bar);
+    side.appendChild(times);
+    root.appendChild(toggle);
+    root.appendChild(side);
+
+    var dragging = false;
+    function fracAt(e) {
+      var r = track.getBoundingClientRect();
+      return r.width ? Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) : 0;
+    }
+    function paint(f, t, d) {
+      root.style.setProperty('--p', (f * 100).toFixed(2) + '%');
+      cur.textContent = fmtTime(t);
+      dur.textContent = d ? fmtTime(d) : '-:--';
+      bar.setAttribute('aria-valuemax', String(Math.round(d)));
+      bar.setAttribute('aria-valuenow', String(Math.round(t)));
+      bar.setAttribute('aria-valuetext', fmtTime(t) + ' of ' + fmtTime(d));
+    }
+    function seek(f) {
+      var d = songLength();
+      if (!d) return;
+      try { audio.currentTime = Math.min(d - 0.25, Math.max(0, f * d)); } catch (e) { /* not seekable yet */ }
+      refreshPlayers();
+    }
+    toggle.addEventListener('click', function () {
+      if (isPlaying()) audio.pause();
+      else playMusic(false);          // carries on from where it was paused
+    });
+    // tap anywhere on the bar to jump there; or drag the dot and let go
+    bar.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      dragging = true;
+      root.classList.add('scrubbing');
+      try { bar.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      var f = fracAt(e), d = songLength();
+      paint(f, f * d, d);
+      e.preventDefault();
+    });
+    bar.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var f = fracAt(e), d = songLength();
+      paint(f, f * d, d);
+    });
+    bar.addEventListener('pointerup', function (e) {
+      if (!dragging) return;
+      dragging = false;
+      root.classList.remove('scrubbing');
+      seek(fracAt(e));
+    });
+    bar.addEventListener('pointercancel', function () {
+      dragging = false;
+      root.classList.remove('scrubbing');
+      refreshPlayers();
+    });
+    bar.addEventListener('keydown', function (e) {
+      var d = songLength();
+      if (!d) return;
+      var t = audio.currentTime || 0, k = e.key;
+      if (k === 'ArrowRight' || k === 'ArrowUp') t += 5;
+      else if (k === 'ArrowLeft' || k === 'ArrowDown') t -= 5;
+      else if (k === 'PageUp') t += 15;
+      else if (k === 'PageDown') t -= 15;
+      else if (k === 'Home') t = 0;
+      else if (k === 'End') t = d;
+      else if (k === ' ' || k === 'Enter') { e.preventDefault(); toggle.click(); return; }
+      else return;
+      e.preventDefault();
+      seek(t / d);
+    });
+
+    var p = {
+      root: root,
+      update: function (on, t, d) {
+        root.classList.toggle('playing', on);
+        toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
+        if (!dragging) paint(d ? Math.min(1, t / d) : 0, t, d);
+      },
+    };
+    players.push(p);
+    p.update(isPlaying(), audio.currentTime || 0, songLength());
+    return root;
+  }
+
+  // the floating player: her photo spins like a record while the song plays
+  function buildDock() {
+    dock = el('div', 'player-dock');
+    dock.setAttribute('role', 'region');
+    dock.setAttribute('aria-label', 'Music player');
+    dock.hidden = true;
+    var head = el('div', 'player-head');
+    var cover = el('span', 'player-cover');
+    cover.setAttribute('aria-hidden', 'true');
+    var photo = cfg.hero && cfg.hero.photo;
+    if (photo) {
+      var img = new Image();
+      img.onload = function () {
+        cover.style.backgroundImage = 'url("' + photo + '")';
+        cover.style.backgroundPosition = (cfg.hero.photoFocus || '50% 50%');
+        cover.classList.add('has-photo');
+      };
+      img.src = photo;
+    }
+    var meta = el('span', 'player-meta');
+    meta.appendChild(el('span', 'player-title', (cfg.music && cfg.music.title) || 'Our Song'));
+    meta.appendChild(el('span', 'player-sub', (cfg.music && cfg.music.subtitle) || ('From ' + (cfg.yourName || 'me') + ', with love 💗')));
+    var min = el('button', 'player-min');
+    min.type = 'button';
+    min.setAttribute('aria-label', 'Make the player small');
+    min.title = 'Make the player small';
+    min.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.6 5.4 9l1.4-1.4 5.2 5.2 5.2-5.2L18.6 9z"/></svg>';
+    min.addEventListener('click', function () {
+      openPlayer(false);
+      try { musicBtn.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    });
+    head.appendChild(cover);
+    head.appendChild(meta);
+    head.appendChild(min);
+    dock.appendChild(head);
+    dock.appendChild(makePlayer('in-dock'));
+    document.body.appendChild(dock);
+    window.addEventListener('resize', dockHeight);
+  }
+  function dockHeight() {
+    if (dock && !dock.hidden) document.documentElement.style.setProperty('--dock-h', dock.offsetHeight + 'px');
+  }
+  // open = the full player; closed = just the round ♫ button
+  function openPlayer(open) {
+    if (!musicOk || songHidden) return;
+    if (!dock) buildDock();
+    dock.hidden = !open;
+    musicBtn.hidden = open;
+    document.body.classList.toggle('player-open', open);
+    dockHeight();
+    refreshPlayers();
+  }
+
   function disableMusic() {
     musicOk = false;
     musicBtn.hidden = true;
+    if (dock) dock.hidden = true;
+    document.body.classList.remove('player-open');
   }
   function playMusic(showLabel) {
     if (!musicOk) return;
     audio.volume = 0.6;
+    audio.muted = false;
     var p = audio.play();
     if (p && p.then) {
       p.then(function () {
-        setPlaying(true);
-        if (showLabel && cfg.music.title) {
+        refreshPlayers();
+        if (showLabel && cfg.music.title && (!dock || dock.hidden)) {
           var np = $('#now-playing');
           np.textContent = '♫ ' + cfg.music.title;
           np.classList.add('show');
           setTimeout(function () { np.classList.remove('show'); }, 3500);
         }
       }).catch(function (err) {
-        if (err && err.name === 'NotAllowedError') setPlaying(false);   // autoplay blocked: user can tap ♫
-        else disableMusic();                                              // file missing / unsupported
+        if (err && err.name === 'NotAllowedError') refreshPlayers();   // autoplay blocked: she can tap ▶
+        else if (err && err.name === 'AbortError') refreshPlayers();   // interrupted by a pause or a jump: fine
+        else disableMusic();                                             // file missing / unsupported
       });
     }
   }
@@ -246,13 +431,16 @@
     available: function () { return musicOk; },
     title: function () { return (cfg.music && cfg.music.title) || 'Our Song'; },
     revealed: function () { return !songHidden; },
+    makePlayer: makePlayer,
     reveal: function () {
       if (!musicOk) return false;
       var first = songHidden;
       songHidden = false;
       if (!PREVIEW) storage('bday-song', '1');
-      musicBtn.hidden = false;
-      if (first || audio.paused) { if (first) audio.currentTime = 0; playMusic(true); }
+      audio.preload = 'auto';
+      if (first || audio.paused) { if (first) audio.currentTime = 0; playMusic(!first); }
+      if (first) openPlayer(true);                       // the first time, show the whole player
+      else if (!dock || dock.hidden) musicBtn.hidden = false;
       if (first) { try { document.dispatchEvent(new CustomEvent('song:revealed')); } catch (e) { /* very old browser */ } }
       return true;
     },
@@ -266,11 +454,9 @@
       var t = TYPES[(String(s).split('.').pop() || '').toLowerCase()];
       return !t || (audio.canPlayType && audio.canPlayType(t) !== '');
     })[0] || srcs[0];
+    if (!songHidden) audio.preload = 'auto';
     audio.addEventListener('error', disableMusic);
-    musicBtn.addEventListener('click', function () {
-      if (audio.paused) playMusic(false);
-      else { audio.pause(); setPlaying(false); }
-    });
+    musicBtn.addEventListener('click', function () { openPlayer(true); });
   }
 
   /* =====================================================================

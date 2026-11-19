@@ -11,7 +11,8 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | **Our Dates** | A scrapbook of every date (Museum, Art museum, Movie, Dinner, Zoo…), with a tally by category and a tap-through photo strip |
 | **Little Names I Call You** | Beluga (a swimming beluga that blows heart bubbles), Kaju Katli (a box of 9 sweets to bite) and Little Donkey (hops and says something sweet). A little beluga also swims across the page now and then |
 | **Opening** | Hearts drift down, "Happy 22nd Birthday" writes itself in, her name fades in, and a gold **🎁 Scratch to reveal your gift** button appears |
-| **Your gift** | A gold **🎁 Your gift** button waits in the bottom corner on every screen. It opens a scratch card; rubbing it reveals your song ("Kaju — You Feel Like Home"), which starts playing, and the ♫ button takes the gift's place |
+| **Your gift** | A gold **🎁 Your gift** button waits in the bottom corner on every screen. It opens a scratch card; rubbing it reveals your song ("Kaju — You Feel Like Home"), which starts playing |
+| **Music player** | After the reveal, a player sits in the corner: her photo spins like a record, ▶ / ❚❚ pauses and carries on from the same spot, and the bar shows the time so far and the length. Tap anywhere on the bar (or drag the dot) to jump back or ahead. ⌄ shrinks it to a round ♫ button whose gold ring fills as the song plays; tap ♫ to open it again |
 | **Our Story** | A live "days together" counter and a timeline of your milestones |
 | **Gallery** | Polaroid-style photos; tap one to view it full screen (swipe between them) |
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
@@ -65,7 +66,7 @@ Tips:
 
 ## 3. Add your song
 
-Put the song in the `music/` folder as **`our-song.m4a`** and/or **`our-song.mp3`**. With `music.reveal: "scratch"` (the default here) it stays a surprise: it starts when she scratches her gift card (or opens the love letter), then plays every time she comes back. Use `reveal: "unlock"` to play it right after unlocking instead. No file means no music button, and the scratch card shows the `games.scratch.secret` text instead.
+Put the song in the `music/` folder as **`our-song.m4a`** and/or **`our-song.mp3`**. With `music.reveal: "scratch"` (the default here) it stays a surprise: it starts when she scratches her gift card (or opens the love letter), then plays every time she comes back. Use `reveal: "unlock"` to play it right after unlocking instead. The player shows `music.title`, and under it `music.subtitle` (default: "From Anush, with love 💗"). No file means no music button, and the scratch card shows the `games.scratch.secret` text instead.
 
 ## 4. Preview it yourself
 

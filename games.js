@@ -114,6 +114,7 @@
     function startGame() {
       stopGame();
       winBox.hidden = true;
+      clearWinExtra();
       area.textContent = '';
       modal.querySelector('.game-sheet').scrollTop = 0;
       instance = current.mount(area, { win: win, opts: opt(current.id) }) || null;
@@ -122,9 +123,23 @@
       if (instance && instance.destroy) { try { instance.destroy(); } catch (e) { /* ignore */ } }
       instance = null;
     }
-    function win(message) {
+    function clearWinExtra() {
+      var old = winBox.querySelector('.game-win-extra');
+      if (old) old.remove();
+      winBox.parentNode.classList.remove('win-tall');
+    }
+    // extra: something to show under the message (the song's player, for the gift)
+    function win(message, extra) {
       if (current.id !== 'hunt') markWon(current.id);
       winMsg.textContent = fill(message);
+      clearWinExtra();
+      if (extra) {
+        var holder = el('div', 'game-win-extra');
+        holder.appendChild(extra);
+        var actions = winBox.querySelector('.game-win-actions');
+        actions.parentNode.insertBefore(holder, actions);
+        winBox.parentNode.classList.add('win-tall');     // the screen grows to fit, so nothing is cut off
+      }
       againBtn.hidden = current.id === 'hunt';
       winBox.hidden = false;
       ctx.celebrate(1800);
@@ -135,6 +150,7 @@
       stopGame();
       modal.hidden = true;
       area.textContent = '';
+      clearWinExtra();
       document.body.style.overflow = '';
       if (lastTile) { try { lastTile.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
     }
@@ -750,7 +766,8 @@
         ctx.burstAt(card);
         if (song) window.BirthdaySong.reveal();      // the song starts as the secret appears
         timer = setTimeout(function () {
-          api.win(song ? (o.songMessage || 'That’s your song. Made just for you. 💗') : (o.message || 'Now you know my secret. 😉'));
+          if (song) api.win(o.songMessage || 'That’s your song. Made just for you. 💗', window.BirthdaySong.makePlayer('in-win'));
+          else api.win(o.message || 'Now you know my secret. 😉');
         }, song ? 4200 : 1600);
       }
       canvas.addEventListener('pointerdown', function (e) {
