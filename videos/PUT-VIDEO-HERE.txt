@@ -1,0 +1,2 @@
+Put the video for the "find all hearts" reward here, named celeb-wish.mp4 (portrait is fine).
+Videos stay off the public GitHub copy; they only go to the live site.

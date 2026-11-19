@@ -1,5 +1,7 @@
-# Personal photos and music stay out of the public GitHub copy (they are deployed to Vercel only)
+# Personal photos, music and videos stay out of the public GitHub copy (they are deployed to Vercel only)
 photos/*
 !photos/PUT-PHOTOS-HERE.txt
 music/*
 !music/PUT-SONG-HERE.txt
+videos/*
+!videos/PUT-VIDEO-HERE.txt

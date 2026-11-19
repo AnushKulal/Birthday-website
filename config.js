@@ -429,6 +429,11 @@ window.SITE = {
     hunt: {
       count: 7,                                              // hidden hearts (3 to 8)
       message: "You found every heart I hid for you, just like you found your way into mine. ❤ {me}",
+      video: {                                               // the reward for finding every heart (remove this block for none)
+        src: "videos/celeb-wish.mp4",
+        poster: "videos/celeb-wish.jpg",                     // shown blurred until she taps play, so it stays a surprise
+        title: "And someone special has a birthday wish for you… 🎬",
+      },
     },
   },
 

@@ -206,6 +206,7 @@
   var ICON_PAUSE = '<svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.5" width="4.2" height="15" rx="1.3"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.3"/></svg>';
   var players = [];      // every player on the page shows the same song, kept in step
   var dock = null;       // the floating player
+  var heldSong = false;  // paused for the birthday video; plays again when the video stops
   var ring = musicBtn.querySelector('.music-ring circle');   // how far into the song, around the round ♫ button
 
   function isPlaying() { return !audio.paused && !audio.muted && !audio.ended; }
@@ -432,6 +433,15 @@
     title: function () { return (cfg.music && cfg.music.title) || 'Our Song'; },
     revealed: function () { return !songHidden; },
     makePlayer: makePlayer,
+    // pause the song while something else plays (the birthday video), then carry on from the same spot
+    hold: function (on) {
+      if (on) {
+        if (isPlaying()) { heldSong = true; audio.pause(); }
+      } else if (heldSong) {
+        heldSong = false;
+        playMusic(false);
+      }
+    },
     reveal: function () {
       if (!musicOk) return false;
       var first = songHidden;

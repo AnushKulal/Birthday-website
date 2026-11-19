@@ -18,6 +18,7 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
 | **How Well Do You Know Us?** | A 5-question quiz with cute reactions and a final score |
 | **Play With Me** | 8 mini games: Scratch to Reveal Your Gift (first, in gold), Cupid's Arrow, Match Our Moments, Catch My Love, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
+| **Heart Hunt reward** | Finding all 7 hearts unlocks a birthday video from a special someone (`videos/celeb-wish.mp4`). It stays blurred until she taps ▶, her song pauses while it plays and carries on after, and she can watch it again from the ❤ 7/7 counter |
 | **Make a Wish** | A cake whose candles she blows out by tapping, or by blowing into her mic |
 | **Love Coupons** | Tickets she can redeem (a stamp lands on them; her phone remembers) |
 | **Open When…** | Little letters for different moments: when she misses you, can't sleep, and more |
@@ -40,7 +41,7 @@ Open `config.js` in any text editor (VS Code, Notepad, TextEdit) and change:
 - `dates`: one entry per date (add new ones at the end; `photos: [...]` gives a card several photos)
 - `nicknames`: the lines Beluga, Kaju Katli and Little Donkey say
 
-**Privacy:** your photos and song are listed in `.gitignore`, so they're never uploaded to the public GitHub copy. They only go to the live site.
+**Privacy:** your photos, song and video are listed in `.gitignore`, so they're never uploaded to the public GitHub copy. They only go to the live site.
 - `story`, `gallery`, `reasons`, `letter`, `surprise`: the words
 - `quiz`: questions about you two (and which option is the right answer)
 - `coupons`, `openWhen`: the coupons and the little letters

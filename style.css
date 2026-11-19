@@ -2186,6 +2186,57 @@ body.locked .hunt-chip { display: none; }
 .gift-float:active { transform: scale(.96); }
 .hunt-info-actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
+/* the birthday video: the reward for finding every heart (blurred until she taps play) */
+.wish-video { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin-bottom: 6px; }
+.wish-video-title { max-width: 22ch; margin: 0; font-family: var(--font-script); font-size: 1.45rem; font-weight: 700; line-height: 1.3; color: var(--magenta); text-align: center; text-wrap: balance; }
+.wish-video-frame {
+  position: relative;
+  /* portrait, as big as fits: never wider than the card, never taller than most of the screen */
+  width: min(100%, 16rem, calc(64vh * 9 / 16));
+  width: min(100%, 16rem, calc(64svh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #2B1530;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5.5px rgba(212, 175, 55, .7), 0 16px 36px rgba(122, 31, 61, .32);
+}
+.wish-video-frame video { display: block; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.wish-video-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px;
+  overflow: hidden;
+  border: 0;
+  background: linear-gradient(160deg, #F9C5D8, #9B5DE5);
+  color: #fff;
+  cursor: pointer;
+}
+.wish-video-blur { position: absolute; inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px); max-width: none; object-fit: cover; filter: blur(16px) saturate(1.2) brightness(.85); }
+.wish-video-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(224, 69, 123, .28), rgba(94, 42, 92, .6)); }
+.wish-video-play {
+  position: relative;
+  z-index: 1;
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--grad-romance);
+  box-shadow: 0 10px 30px rgba(224, 69, 123, .55), 0 0 0 7px rgba(255, 255, 255, .35);
+  animation: wish-pulse 2.2s ease-in-out infinite;
+}
+.wish-video-play svg { width: 34px; height: 34px; fill: #fff; translate: 2px 0; }
+.wish-video-tap { position: relative; z-index: 1; font-size: .82rem; font-weight: 600; letter-spacing: .03em; text-align: center; text-shadow: 0 1px 8px rgba(0, 0, 0, .45); }
+.wish-video-cover:hover .wish-video-play { box-shadow: 0 12px 36px rgba(224, 69, 123, .7), 0 0 0 9px rgba(255, 255, 255, .4); }
+@keyframes wish-pulse { 0%, 100% { scale: 1; } 50% { scale: 1.08; } }
+/* inside the "You did it!" card the video gets a plain frame, not the white player card */
+.game-win-extra:has(.wish-video) { padding: 4px 0 6px; background: none; box-shadow: none; }
+
 /* the note that tells her about the hidden hearts */
 .hunt-intro {
   position: fixed;

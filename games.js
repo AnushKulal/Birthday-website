@@ -120,6 +120,7 @@
       instance = current.mount(area, { win: win, opts: opt(current.id) }) || null;
     }
     function stopGame() {
+      [].forEach.call(modal.querySelectorAll('video'), function (v) { try { v.pause(); } catch (e) { /* ignore */ } });
       if (instance && instance.destroy) { try { instance.destroy(); } catch (e) { /* ignore */ } }
       instance = null;
     }
@@ -143,7 +144,8 @@
       againBtn.hidden = current.id === 'hunt';
       winBox.hidden = false;
       ctx.celebrate(1800);
-      try { $('#game-done').focus(); } catch (e) { /* ignore */ }
+      if (extra) modal.scrollTop = 0;     // a tall screen: start at the top, so nothing is missed
+      try { $('#game-done').focus(extra ? { preventScroll: true } : undefined); } catch (e) { /* ignore */ }
     }
     function closeGame() {
       if (modal.hidden) return;
@@ -1033,7 +1035,54 @@
       ['#letter .section-head', 'left:4%;top:8px'],
       ['.footer', 'right:9%;top:24%'],
     ];
-    var chip = null, toast = null, toastTimer = 0, intro = null;
+    var chip = null, toast = null, toastTimer = 0, intro = null, justFinished = false;
+
+    // The reward for finding every heart: a birthday video, blurred until she taps play.
+    // Her song pauses while it plays and carries on afterwards.
+    function makeWishVideo() {
+      var v = opt('hunt').video;
+      if (!v || !v.src) return null;
+      var box = el('div', 'wish-video');
+      box.appendChild(el('p', 'wish-video-title', fill(v.title || 'And someone special has a birthday wish for you… 🎬')));
+      var frame = el('div', 'wish-video-frame');
+      var video = document.createElement('video');
+      video.preload = 'metadata';
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      if (v.poster) video.poster = v.poster;
+      video.src = v.src;
+      var cover = el('button', 'wish-video-cover');
+      cover.type = 'button';
+      cover.setAttribute('aria-label', 'Play the birthday message');
+      if (v.poster) {
+        var blur = el('img', 'wish-video-blur');
+        blur.alt = '';
+        blur.src = v.poster;
+        cover.appendChild(blur);
+      }
+      var play = el('span', 'wish-video-play');
+      play.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.7-6.8c.6-.4.6-1.3 0-1.7L9.6 4.3C8.9 3.9 8 4.4 8 5.2z"/></svg>';
+      cover.appendChild(play);
+      var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
+      cover.appendChild(el('span', 'wish-video-tap', (touch ? 'Tap' : 'Click') + ' to play · sound on 🔊'));
+      cover.addEventListener('click', function () {
+        cover.hidden = true;
+        video.controls = true;
+        var p = video.play();
+        if (p && p.catch) p.catch(function () { /* the video's own ▶ is there if the browser held it back */ });
+      });
+      var song = window.BirthdaySong;
+      video.addEventListener('play', function () { if (song && song.hold) song.hold(true); });
+      ['pause', 'ended'].forEach(function (ev) {
+        video.addEventListener(ev, function () { if (song && song.hold) song.hold(false); });
+      });
+      video.addEventListener('error', function () { box.remove(); });   // no file: no broken player
+      frame.appendChild(video);
+      frame.appendChild(cover);
+      box.appendChild(frame);
+      return box;
+    }
     function huntMessage() { return opt('hunt').message || 'You found every heart I hid for you. Just like you found your way into mine.'; }
     function huntDone() { return hunt.total > 0 && hunt.found.length >= hunt.total; }
     function updateChip() {
@@ -1151,7 +1200,12 @@
           if (huntDone()) {
             closeIntro(true);
             showToast('You found all ' + hunt.total + ' hearts! ❤');
-            setTimeout(function () { openHunt(); win(huntMessage()); }, 1100);
+            setTimeout(function () {
+              justFinished = true;           // the video goes on the "You did it!" screen, not twice
+              openHunt();
+              justFinished = false;
+              win(huntMessage(), makeWishVideo());
+            }, 1100);
           } else {
             showToast('Heart ' + hunt.found.length + ' of ' + hunt.total + ' found! Keep looking…');
           }
@@ -1183,6 +1237,10 @@
       wrap.appendChild(row);
       wrap.appendChild(p1);
       wrap.appendChild(p2);
+      if (n >= hunt.total && !justFinished) {   // she can watch the birthday video again any time
+        var wv = makeWishVideo();
+        if (wv) wrap.appendChild(wv);
+      }
       wrap.appendChild(actions);
       area.appendChild(wrap);
     }
