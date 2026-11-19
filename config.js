@@ -431,8 +431,11 @@ window.SITE = {
       message: "You found every heart I hid for you, just like you found your way into mine. ❤ {me}",
       video: {                                               // the reward for finding every heart (remove this block for none)
         src: "videos/celeb-wish.mp4",
-        poster: "videos/celeb-wish.jpg",                     // shown blurred until she taps play, so it stays a surprise
-        title: "And someone special has a birthday wish for you… 🎬",
+        poster: "videos/celeb-wish.jpg",
+        title: "But wait… there’s one more surprise 🎬",       // shown after the message, above the movie ticket
+        ticket: "Your surprise video",                       // on the golden ticket
+        credit: "A special birthday message for {her}",      // under the 3-2-1 countdown
+        endMessage: "Happy Birthday, {her} 💗",               // when the curtains close
       },
     },
   },

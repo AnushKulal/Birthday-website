@@ -120,6 +120,7 @@
       instance = current.mount(area, { win: win, opts: opt(current.id) }) || null;
     }
     function stopGame() {
+      if (activeShow) { activeShow.stop(); activeShow = null; }      // the surprise video, if it's on screen
       [].forEach.call(modal.querySelectorAll('video'), function (v) { try { v.pause(); } catch (e) { /* ignore */ } });
       if (instance && instance.destroy) { try { instance.destroy(); } catch (e) { /* ignore */ } }
       instance = null;
@@ -1037,14 +1038,38 @@
     ];
     var chip = null, toast = null, toastTimer = 0, intro = null, justFinished = false;
 
-    // The reward for finding every heart: a birthday video, blurred until she taps play.
-    // Her song pauses while it plays and carries on afterwards.
-    function makeWishVideo() {
+    // The reward for finding every heart. First her message; then a golden movie ticket fades in.
+    // Tapping it tears the ticket, her song pauses (the lights dim), a little cinema counts down 3-2-1,
+    // and the curtains open on the video. When it ends the curtains close, and her song carries on.
+    var activeShow = null;     // the show on screen, so closing the window can tidy it up
+    var PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.7-6.8c.6-.4.6-1.3 0-1.7L9.6 4.3C8.9 3.9 8 4.4 8 5.2z"/></svg>';
+    function makeWishVideo(opts) {
       var v = opt('hunt').video;
       if (!v || !v.src) return null;
+      opts = opts || {};
+      var song = window.BirthdaySong;
+      var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
       var box = el('div', 'wish-video');
-      box.appendChild(el('p', 'wish-video-title', fill(v.title || 'And someone special has a birthday wish for you… 🎬')));
-      var frame = el('div', 'wish-video-frame');
+      box.appendChild(el('p', 'wish-video-title', fill(v.title || 'But wait… there’s one more surprise 🎬')));
+
+      // 1. the ticket
+      var ticket = el('button', 'wish-ticket');
+      ticket.type = 'button';
+      ticket.setAttribute('aria-label', fill((v.ticket || 'Your surprise video') + '. ' + (touch ? 'Tap' : 'Click') + ' to play.'));
+      var body = el('span', 'wish-ticket-body');
+      body.setAttribute('aria-hidden', 'true');
+      body.appendChild(el('span', 'wish-ticket-stub', 'ADMIT ONE'));
+      var main = el('span', 'wish-ticket-main');
+      main.appendChild(el('span', 'wish-ticket-kicker', '🎬 Tonight’s feature'));
+      main.appendChild(el('span', 'wish-ticket-title', fill(v.ticket || 'Your surprise video')));
+      main.appendChild(el('span', 'wish-ticket-for', fill('just for {her}')));
+      main.appendChild(el('span', 'wish-ticket-go', (touch ? 'Tap' : 'Click') + ' to play ▶'));
+      body.appendChild(main);
+      ticket.appendChild(body);
+
+      // 2. the little cinema
+      var stage = el('div', 'wish-stage');
+      stage.hidden = true;
       var video = document.createElement('video');
       video.preload = 'metadata';
       video.playsInline = true;
@@ -1052,35 +1077,107 @@
       video.setAttribute('webkit-playsinline', '');
       if (v.poster) video.poster = v.poster;
       video.src = v.src;
-      var cover = el('button', 'wish-video-cover');
-      cover.type = 'button';
-      cover.setAttribute('aria-label', 'Play the birthday message');
-      if (v.poster) {
-        var blur = el('img', 'wish-video-blur');
-        blur.alt = '';
-        blur.src = v.poster;
-        cover.appendChild(blur);
+      var curtL = el('div', 'wish-curtain left'), curtR = el('div', 'wish-curtain right'), valance = el('div', 'wish-valance');
+      var countdown = el('div', 'wish-countdown');
+      var dial = el('div', 'wish-dial');
+      var num = el('span', 'wish-num', '3');
+      dial.appendChild(num);
+      countdown.appendChild(dial);
+      countdown.appendChild(el('p', 'wish-credit', fill(v.credit || 'A special birthday message for {her}')));
+      var end = el('div', 'wish-end');
+      end.hidden = true;
+      end.appendChild(el('p', 'wish-end-msg', fill(v.endMessage || 'Happy Birthday, {her} 💗')));
+      var again = el('button', 'btn wish-again', '↺ Watch again');
+      again.type = 'button';
+      end.appendChild(again);
+      var tapPlay = el('button', 'wish-tap-play');      // only if a phone held the video back
+      tapPlay.type = 'button';
+      tapPlay.hidden = true;
+      tapPlay.setAttribute('aria-label', 'Play the video');
+      tapPlay.innerHTML = PLAY_ICON;
+      [curtL, curtR, valance, countdown].forEach(function (n) { n.setAttribute('aria-hidden', 'true'); });
+      [video, curtL, curtR, valance, countdown, end, tapPlay].forEach(function (n) { stage.appendChild(n); });
+      box.appendChild(ticket);
+      box.appendChild(stage);
+
+      var state = 'ticket', timers = [], held = false;
+      function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+      function holdSong(on) {
+        if (!song || !song.hold || held === on) return;
+        held = on;
+        song.hold(on);
       }
-      var play = el('span', 'wish-video-play');
-      play.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.7-6.8c.6-.4.6-1.3 0-1.7L9.6 4.3C8.9 3.9 8 4.4 8 5.2z"/></svg>';
-      cover.appendChild(play);
-      var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
-      cover.appendChild(el('span', 'wish-video-tap', (touch ? 'Tap' : 'Click') + ' to play · sound on 🔊'));
-      cover.addEventListener('click', function () {
-        cover.hidden = true;
+      function roll() {                       // the curtains open and the video plays, with sound
+        state = 'playing';
+        stage.classList.remove('counting');
+        stage.classList.add('open');
+        video.muted = false;
         video.controls = true;
         var p = video.play();
-        if (p && p.catch) p.catch(function () { /* the video's own ▶ is there if the browser held it back */ });
+        if (p && p.catch) p.catch(function () { tapPlay.hidden = false; });
+      }
+      ticket.addEventListener('click', function () {
+        if (state !== 'ticket') return;
+        state = 'intro';
+        holdSong(true);                       // the lights dim: her song pauses for the show
+        // phones only let a video play with sound after a tap: start it silently now, inside the tap
+        try {
+          video.muted = true;
+          var p = video.play();
+          if (p && p.then) p.then(function () { if (state === 'intro') { video.pause(); video.currentTime = 0; } }).catch(function () { /* fine */ });
+        } catch (e) { /* fine */ }
+        ticket.classList.add('torn');
+        later(function () {
+          ticket.hidden = true;
+          stage.hidden = false;
+          stage.classList.add('counting');
+          try { stage.scrollIntoView({ behavior: ctx.reduced ? 'auto' : 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
+          var n = 3;
+          num.textContent = n;
+          dial.classList.add('tick');
+          (function step() {
+            later(function () {
+              n--;
+              if (n > 0) {
+                num.textContent = n;
+                dial.classList.remove('tick');
+                void dial.offsetWidth;            // restart the sweep
+                dial.classList.add('tick');
+                step();
+              } else roll();
+            }, 1000);
+          })();
+        }, 650);
       });
-      var song = window.BirthdaySong;
-      video.addEventListener('play', function () { if (song && song.hold) song.hold(true); });
-      ['pause', 'ended'].forEach(function (ev) {
-        video.addEventListener(ev, function () { if (song && song.hold) song.hold(false); });
+      tapPlay.addEventListener('click', function () { tapPlay.hidden = true; video.play(); });
+      video.addEventListener('play', function () { if (state === 'playing') { tapPlay.hidden = true; holdSong(true); } });
+      video.addEventListener('pause', function () { if (state === 'playing' && !video.ended) holdSong(false); });
+      video.addEventListener('ended', function () {
+        if (state !== 'playing') return;
+        state = 'end';
+        video.controls = false;
+        stage.classList.remove('open');      // the curtains close…
+        later(function () { end.hidden = false; }, 1000);
+        holdSong(false);                     // …and her song carries on
+      });
+      again.addEventListener('click', function () {
+        end.hidden = true;
+        try { video.currentTime = 0; } catch (e) { /* ignore */ }
+        roll();
       });
       video.addEventListener('error', function () { box.remove(); });   // no file: no broken player
-      frame.appendChild(video);
-      frame.appendChild(cover);
-      box.appendChild(frame);
+      // on the "You did it!" screen: once she's read the message, bring the ticket into view
+      if (opts.nudge) later(function () {
+        if (state === 'ticket' && box.isConnected) { try { ticket.scrollIntoView({ behavior: ctx.reduced ? 'auto' : 'smooth', block: 'nearest' }); } catch (e) { /* ignore */ } }
+      }, 2400);
+      activeShow = {
+        stop: function () {
+          timers.forEach(clearTimeout);
+          timers = [];
+          try { video.pause(); } catch (e) { /* ignore */ }
+          holdSong(false);
+        },
+      };
       return box;
     }
     function huntMessage() { return opt('hunt').message || 'You found every heart I hid for you. Just like you found your way into mine.'; }
@@ -1204,7 +1301,7 @@
               justFinished = true;           // the video goes on the "You did it!" screen, not twice
               openHunt();
               justFinished = false;
-              win(huntMessage(), makeWishVideo());
+              win(huntMessage(), makeWishVideo({ nudge: true }));
             }, 1100);
           } else {
             showToast('Heart ' + hunt.found.length + ' of ' + hunt.total + ' found! Keep looking…');

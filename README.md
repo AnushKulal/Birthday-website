@@ -18,7 +18,7 @@ A romantic, mobile-first birthday website. Everything you need to change is in *
 | **Reasons I Love You** | A card deck she taps through, one reason at a time |
 | **How Well Do You Know Us?** | A 5-question quiz with cute reactions and a final score |
 | **Play With Me** | 8 mini games: Scratch to Reveal Your Gift (first, in gold), Cupid's Arrow, Match Our Moments, Catch My Love, Connect Our Stars, Pop the Balloons, Love Meter, and Heart Hunt (7 hearts hidden around the whole page) |
-| **Heart Hunt reward** | Finding all 7 hearts unlocks a birthday video from a special someone (`videos/celeb-wish.mp4`). It stays blurred until she taps ▶, her song pauses while it plays and carries on after, and she can watch it again from the ❤ 7/7 counter |
+| **Heart Hunt reward** | After the 7th heart: your message first, then "But wait… there's one more surprise 🎬" and a golden movie ticket. Tapping it tears the ticket, her song pauses, red velvet curtains count down 3-2-1 and open on the birthday video (`videos/celeb-wish.mp4`). At the end the curtains close on "Happy Birthday, Kajal 💗" with ↺ Watch again, and her song carries on. She can see it again from the ❤ 7/7 counter. The words are in `games.hunt.video` in `config.js` |
 | **Make a Wish** | A cake whose candles she blows out by tapping, or by blowing into her mic |
 | **Love Coupons** | Tickets she can redeem (a stamp lands on them; her phone remembers) |
 | **Open When…** | Little letters for different moments: when she misses you, can't sleep, and more |
